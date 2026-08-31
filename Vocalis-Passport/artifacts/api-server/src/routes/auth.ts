@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { db, usersTable } from "@workspace/db";
+import { db, usersTable, passportsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import {
   hashPassword,
@@ -58,8 +58,14 @@ router.post("/auth/register", async (req: Request, res: Response) => {
       .limit(1);
 
     if (existing) {
-      res.status(409).json({ error: "An account with this email already exists. Please sign in." });
-      return;
+      if (!existing.active) {
+        // If account was previously deactivated, purge stale records to allow clean re-registration
+        await db.delete(passportsTable).where(eq(passportsTable.studentId, existing.id));
+        await db.delete(usersTable).where(eq(usersTable.id, existing.id));
+      } else {
+        res.status(409).json({ error: "An account with this email already exists. Please sign in." });
+        return;
+      }
     }
 
     const vocalisId = await generateVocalisId();

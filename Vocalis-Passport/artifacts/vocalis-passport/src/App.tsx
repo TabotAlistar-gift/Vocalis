@@ -1467,8 +1467,13 @@ function AdminStudentPanel({ student, close }: { student: AdminStudent; close: (
       { id: student.id },
       {
         onSuccess: () => {
-          setFeedback('Student account deleted and email credentials freed.');
-          qc.invalidateQueries({ queryKey: getListAdminStudentsQueryKey() });
+          qc.invalidateQueries({
+            predicate: (query) => {
+              const key = query.queryKey[0];
+              return typeof key === 'string' && key.startsWith('/api/admin/students');
+            },
+          });
+          qc.removeQueries({ queryKey: getGetAdminStudentQueryKey(student.id) });
           close();
         },
         onError: (err) => setFeedback(errorText(err)),
