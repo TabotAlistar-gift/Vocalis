@@ -358,9 +358,21 @@ export async function customFetch<T = unknown>(
     }
   }
 
-  const requestInfo = { method, url: resolveUrl(input) };
+  const target = applyBaseUrl(input);
+  const requestInfo = { method, url: resolveUrl(target) };
 
-  const response = await fetch(input, { credentials: "include", ...init, method, headers });
+  let response: Response;
+  try {
+    response = await fetch(target, { credentials: "include", ...init, method, headers });
+  } catch (networkError) {
+    // If backend is waking up or cold starting, retry once after 1.5 seconds
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      response = await fetch(target, { credentials: "include", ...init, method, headers });
+    } catch {
+      throw networkError;
+    }
+  }
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

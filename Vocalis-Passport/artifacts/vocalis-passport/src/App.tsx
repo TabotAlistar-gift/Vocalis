@@ -636,30 +636,12 @@ function PageHeading({ eyebrow, title, subtitle, action }: { eyebrow: string; ti
 
 function DashboardPage() {
   const { data, isLoading, error, refetch } = useGetStudentDashboard();
-  const download = useDownloadStudentPassportPdf({ query: { enabled: false, queryKey: getDownloadStudentPassportPdfQueryKey() } });
-  const [downloadMsg, setDownloadMsg] = useState('');
 
   if (isLoading) return <LoadingState label="Loading your dashboard" />;
   if (error || !data) return <ErrorState error={error} retry={refetch} />;
 
   const profile = data.student;
   const passport = data.passport;
-
-  async function handleDownload() {
-    setDownloadMsg('');
-    const result = await download.refetch();
-    if (result.data instanceof Blob) {
-      const url = URL.createObjectURL(result.data);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `Vocalis_Passport_${profile.vocalisId}.pdf`;
-      anchor.click();
-      URL.revokeObjectURL(url);
-      setDownloadMsg('Passport downloaded successfully!');
-    } else {
-      setDownloadMsg('Please generate your passport first.');
-    }
-  }
 
   return (
     <div data-testid="page-dashboard" className="space-y-6">
@@ -672,20 +654,9 @@ function DashboardPage() {
             <Link href="/passport" className="button-primary inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold shadow-md" data-testid="link-dashboard-passport">
               <FileBadge className="h-4 w-4" /> View Passport
             </Link>
-            {passport && (
-              <Button onClick={handleDownload} variant="outline" className="h-10 rounded-xl border-[#d8e1ec] bg-white font-bold text-[#0e2347] shadow-sm" disabled={download.isFetching} data-testid="button-dashboard-download">
-                <Download className="mr-1.5 h-4 w-4" /> {download.isFetching ? 'Preparing...' : 'Download PDF'}
-              </Button>
-            )}
           </div>
         }
       />
-
-      {downloadMsg && (
-        <div className="flex items-center gap-2 rounded-xl bg-[#e8f7ef] p-3.5 text-xs font-semibold text-[#197044] shadow-sm">
-          <Check className="h-4 w-4 shrink-0" /> {downloadMsg}
-        </div>
-      )}
 
       {/* Hero Overview Card */}
       <div className="dashboard-hero">
@@ -1038,62 +1009,6 @@ function ProfilePage() {
 
 function PassportPage() {
   const { data: passport, isLoading, error, refetch } = useGetStudentPassport();
-  const generate = useGenerateStudentPassport();
-  const download = useDownloadStudentPassportPdf({ query: { enabled: false, queryKey: getDownloadStudentPassportPdfQueryKey() } });
-  const qc = useQueryClient();
-  const [, setLocation] = useLocation();
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [showCelebration, setShowCelebration] = useState(false);
-
-  function handleGenerate() {
-    setFeedback(null);
-    generate.mutate(undefined, {
-      onSuccess: (next) => {
-        qc.setQueryData(getGetStudentPassportQueryKey(), next);
-        qc.invalidateQueries({ queryKey: getGetStudentDashboardQueryKey() });
-        setShowCelebration(true);
-      },
-      onError: (err) => {
-        setFeedback({ type: 'error', message: errorText(err) });
-      },
-    });
-  }
-
-  async function handleDownload() {
-    setFeedback(null);
-    try {
-      const result = await download.refetch();
-      if (result.data instanceof Blob) {
-        const blob = new Blob([result.data], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const filename = `Vocalis_Passport_${passport?.vocalisId || 'credential'}.pdf`;
-
-        const anchor = document.createElement('a');
-        anchor.style.display = 'none';
-        anchor.href = url;
-        anchor.download = filename;
-        anchor.setAttribute('download', filename);
-        anchor.target = '_blank';
-        anchor.rel = 'noopener noreferrer';
-
-        document.body.appendChild(anchor);
-        anchor.click();
-
-        setTimeout(() => {
-          try {
-            document.body.removeChild(anchor);
-            window.URL.revokeObjectURL(url);
-          } catch {}
-        }, 60000);
-
-        setFeedback({ type: 'success', message: 'PDF downloaded successfully to your device!' });
-      } else {
-        setFeedback({ type: 'error', message: errorText(result.error || 'Failed to download passport PDF.') });
-      }
-    } catch (err) {
-      setFeedback({ type: 'error', message: errorText(err) });
-    }
-  }
 
   if (isLoading) return <LoadingState label="Loading your passport" />;
   if (error && !passport) return <ErrorState error={error} retry={refetch} />;
@@ -1107,34 +1022,13 @@ function PassportPage() {
         action={
           <div className="flex flex-wrap gap-2.5">
             <Link href="/profile" className="inline-flex items-center gap-1.5 rounded-xl border border-[#d8e1ec] bg-white px-4 py-2.5 text-xs font-bold text-[#0e2347] shadow-sm hover:bg-[#f8fafc]" data-testid="button-edit-info">
-              <Pencil className="h-3.5 w-3.5" /> Edit Information
+              <Pencil className="h-3.5 w-3.5" /> Edit Profile Details
             </Link>
-            {passport && (
-              <Button variant="outline" onClick={handleDownload} disabled={download.isFetching} className="h-10 rounded-xl border-[#d8e1ec] bg-white font-bold text-[#0e2347] shadow-sm" data-testid="button-download-passport">
-                <Download className="mr-1.5 h-4 w-4" /> {download.isFetching ? 'Preparing PDF...' : 'Download PDF'}
-              </Button>
-            )}
-            <Button className="button-primary h-10 font-bold shadow-md" onClick={handleGenerate} disabled={generate.isPending} data-testid="button-generate-passport">
-              <Sparkles className="mr-1.5 h-4 w-4" /> {generate.isPending ? 'Generating...' : passport ? 'Regenerate Passport' : 'Generate My Passport'}
-            </Button>
           </div>
         }
       />
 
-      {feedback && (
-        <div
-          className={cn(
-            'flex items-center gap-2 rounded-xl p-4 text-sm font-semibold shadow-sm',
-            feedback.type === 'success' ? 'bg-[#e8f7ef] text-[#197044]' : 'bg-destructive/10 text-destructive'
-          )}
-          data-testid="text-passport-feedback"
-        >
-          {feedback.type === 'success' ? <CheckCircle2 className="h-5 w-5 shrink-0" /> : <CircleAlert className="h-5 w-5 shrink-0" />}
-          {feedback.message}
-        </div>
-      )}
-
-      {passport ? (
+      {passport && passport.status === 'active' ? (
         <div className="passport-preview-layout">
           <div className="passport-full-preview">
             <PassportVisual passport={passport} />
@@ -1153,12 +1047,12 @@ function PassportPage() {
               <DataPoint label="Date Joined" value={formatDate(passport.dateJoined)} testId="text-passport-joined" />
             </div>
 
-            <div className="mt-7 border-t border-border pt-5 space-y-3">
-              <Button onClick={handleDownload} className="button-primary flex w-full items-center justify-center gap-2 py-3 text-sm font-bold shadow-md" disabled={download.isFetching}>
-                <Download className="h-4 w-4" /> Download Official PDF
-              </Button>
-              <p className="text-center text-[11px] leading-4 text-muted-foreground">
-                High-resolution printable card format for phone and desktop.
+            <div className="mt-7 border-t border-border pt-5 space-y-2 text-center">
+              <div className="inline-flex items-center gap-2 rounded-full bg-[#e8f7ef] px-4 py-2 text-xs font-bold text-[#197044]">
+                <CheckCircle2 className="h-4 w-4" /> Officially Issued & Verified
+              </div>
+              <p className="text-[11px] leading-4 text-muted-foreground pt-1">
+                Official digital passport issued and authorized by the Vocalis Founder.
               </p>
             </div>
           </div>
@@ -1168,76 +1062,14 @@ function PassportPage() {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eef3ff] text-[#165de8] shadow-sm">
             <FileBadge className="h-8 w-8" />
           </div>
-          <h2 className="mt-5 font-display text-2xl font-bold text-[#0e2347]">Your Passport is Ready to be Generated</h2>
+          <h2 className="mt-5 font-display text-2xl font-bold text-[#0e2347]">Passport Pending Review & Issuance</h2>
           <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-            Review your information, then click Generate to create your official digital Vocalis Passport.
+            Your profile details and registration are saved. The Vocalis Founder reviews member accounts and officially issues your verified passport.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-            <Button className="button-primary h-11 px-6 font-bold shadow-md" onClick={handleGenerate} disabled={generate.isPending} data-testid="button-empty-generate">
-              <Sparkles className="mr-2 h-4 w-4" /> {generate.isPending ? 'Generating...' : 'Generate My Passport'}
-            </Button>
-            <Link href="/profile" className="inline-flex h-11 items-center justify-center rounded-xl border border-[#d8e1ec] bg-white px-5 text-sm font-bold text-[#0e2347] shadow-sm hover:bg-[#f8fafc]">
-              Review Profile Details
+            <Link href="/profile" className="button-primary inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-bold shadow-md">
+              <Pencil className="mr-2 h-4 w-4" /> Review & Update Profile
             </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Celebratory Modal on Generation */}
-      {showCelebration && passport && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-rise" data-testid="modal-celebration">
-          <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-white/20 bg-white p-6 shadow-2xl sm:p-8">
-            <button
-              onClick={() => setShowCelebration(false)}
-              className="absolute right-4 top-4 rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f4c641]/20 to-[#f4c641]/5 text-[#b58500]">
-                <Sparkles className="h-8 w-8 text-[#f4c641] animate-pulse" />
-              </div>
-              <h2 className="mt-4 font-display text-2xl font-bold text-[#0e2347] sm:text-3xl">
-                Your Vocalis Passport is Ready!
-              </h2>
-              <p className="mt-2 text-base font-medium text-[#165de8]">
-                Welcome to Vocalis, {passport.fullName}.
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                You are officially a <strong className="text-[#0e2347]">{passport.level}</strong> Vocalis member with the <strong className="text-[#0e2347]">{passport.badge}</strong> badge.
-              </p>
-            </div>
-
-            <div className="mt-6 flex justify-center">
-              <div className="w-full max-w-[360px] overflow-hidden rounded-xl border border-border shadow-md">
-                <PassportVisual passport={passport} />
-              </div>
-            </div>
-
-            <div className="mt-6 flex flex-col gap-2.5 sm:flex-row">
-              <Button
-                onClick={() => {
-                  handleDownload();
-                  setShowCelebration(false);
-                }}
-                className="button-primary h-12 flex-1 font-bold shadow-md"
-                data-testid="button-celebration-download"
-              >
-                <Download className="mr-2 h-4 w-4" /> Download My Passport
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowCelebration(false);
-                  setLocation('/profile');
-                }}
-                className="h-12 flex-1 rounded-xl border-[#d8e1ec] font-bold text-[#0e2347]"
-                data-testid="button-celebration-profile"
-              >
-                <UserRound className="mr-2 h-4 w-4" /> View My Profile
-              </Button>
-            </div>
           </div>
         </div>
       )}

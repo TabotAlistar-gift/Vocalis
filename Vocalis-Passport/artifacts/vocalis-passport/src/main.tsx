@@ -6,9 +6,11 @@ import { ErrorBoundary } from '@/components/error-boundary';
 
 import './index.css';
 
-// Automatically connect to remote backend API when VITE_API_URL is configured
-if (import.meta.env.VITE_API_URL) {
-  setBaseUrl(import.meta.env.VITE_API_URL);
+// Automatically connect to your live Render backend URL
+const backendUrl = import.meta.env.VITE_API_URL || 'https://vocalis-ti2p.onrender.com';
+
+if (backendUrl && (!import.meta.env.DEV || !backendUrl.includes('localhost'))) {
+  setBaseUrl(backendUrl);
 }
 
 // Ensure authorization token is automatically attached to all API requests across domains
