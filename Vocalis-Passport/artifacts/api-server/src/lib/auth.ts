@@ -129,6 +129,11 @@ export function extractToken(req: Request): string | null {
     return authHeader.slice(7).trim();
   }
 
+  // Check URL query parameter (essential for direct mobile download links)
+  if (typeof req.query.token === "string" && req.query.token.trim()) {
+    return req.query.token.trim();
+  }
+
   return null;
 }
 

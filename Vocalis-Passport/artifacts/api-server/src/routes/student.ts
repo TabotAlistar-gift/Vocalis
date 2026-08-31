@@ -180,20 +180,17 @@ router.post("/student/photo", requireAuth, upload.single("photo"), async (req: R
       return;
     }
 
-    // Process & crop to standard portrait aspect ratio (3:4) with sharp
-    const filename = `portrait-${user.vocalisId}-${Date.now()}.jpg`;
-    const filepath = path.join(UPLOADS_DIR, filename);
+    // Process & crop to standard portrait aspect ratio (3:4) with sharp and store directly in DB for permanent persistence
+    const processedBuffer = await sharp(buffer)
+      .resize(480, 640, { fit: "cover", position: "center" })
+      .jpeg({ quality: 85 })
+      .toBuffer();
 
-    await sharp(buffer)
-      .resize(600, 800, { fit: "cover", position: "center" })
-      .jpeg({ quality: 92 })
-      .toFile(filepath);
-
-    const relativePath = `uploads/${filename}`;
+    const dataUrl = `data:image/jpeg;base64,${processedBuffer.toString("base64")}`;
 
     const [updated] = await db
       .update(usersTable)
-      .set({ profilePhotoPath: relativePath })
+      .set({ profilePhotoPath: dataUrl })
       .where(eq(usersTable.id, user.id))
       .returning();
 
@@ -206,7 +203,7 @@ router.post("/student/photo", requireAuth, upload.single("photo"), async (req: R
       level: updated.level,
       badge: updated.badge,
       passportStatus: updated.passportStatus,
-      profilePhotoUrl: `/api/storage/objects/${relativePath}`,
+      profilePhotoUrl: updated.profilePhotoPath,
       dateJoined: updated.dateJoined,
       dateIssued: updated.dateIssued,
     });

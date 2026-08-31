@@ -1335,6 +1335,10 @@ function AdminStudentPanel({ student, close }: { student: AdminStudent; close: (
 
   async function handleDownload() {
     try {
+      const token = localStorage.getItem('vocalis_token') || '';
+      const backendUrl = import.meta.env.VITE_API_URL || 'https://vocalis-ti2p.onrender.com';
+      const directDownloadUrl = `${backendUrl}/api/admin/students/${student.id}/passport/pdf?token=${encodeURIComponent(token)}`;
+
       const result = await download.refetch();
       if (result.data instanceof Blob) {
         const blob = new Blob([result.data], { type: 'application/pdf' });
@@ -1359,10 +1363,12 @@ function AdminStudentPanel({ student, close }: { student: AdminStudent; close: (
           } catch {}
         }, 60000);
       } else {
-        setFeedback(errorText(result.error || 'Failed to download passport PDF.'));
+        window.open(directDownloadUrl, '_blank');
       }
-    } catch (err) {
-      setFeedback(errorText(err));
+    } catch {
+      const token = localStorage.getItem('vocalis_token') || '';
+      const backendUrl = import.meta.env.VITE_API_URL || 'https://vocalis-ti2p.onrender.com';
+      window.open(`${backendUrl}/api/admin/students/${student.id}/passport/pdf?token=${encodeURIComponent(token)}`, '_blank');
     }
   }
 
