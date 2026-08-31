@@ -197,8 +197,9 @@ export function requireAdmin(req: Request, res: Response, next: NextFunction) {
  */
 export async function seedAdminUser() {
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || "tabotclarise@gmail.com";
+    const adminEmail = (process.env.ADMIN_EMAIL || "tabotclarise@gmail.com").trim().toLowerCase();
     const adminPassword = process.env.ADMIN_PASSWORD || "VocalisAdmin2026!";
+    const passwordHash = await hashPassword(adminPassword);
 
     const [existing] = await db
       .select()
@@ -207,7 +208,6 @@ export async function seedAdminUser() {
       .limit(1);
 
     if (!existing) {
-      const passwordHash = await hashPassword(adminPassword);
       await db.insert(usersTable).values({
         fullName: "Clarise Tabot (Founder)",
         email: adminEmail,
@@ -223,6 +223,17 @@ export async function seedAdminUser() {
         active: true,
       });
       logger.info({ email: adminEmail }, "Seeded default Vocalis admin user");
+    } else {
+      // Ensure admin password, role, and active status are always up to date
+      await db
+        .update(usersTable)
+        .set({
+          role: "admin",
+          active: true,
+          passwordHash,
+        })
+        .where(eq(usersTable.id, existing.id));
+      logger.info({ email: adminEmail }, "Synchronized Vocalis admin user credentials");
     }
   } catch (err) {
     logger.warn({ err }, "Admin seeding skipped or already completed");

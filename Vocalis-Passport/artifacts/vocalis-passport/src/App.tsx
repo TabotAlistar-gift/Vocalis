@@ -8,7 +8,7 @@ import {
   ArrowRight, BarChart3, Check, ChevronRight, CircleAlert,
   Download, FileBadge, ImagePlus, LayoutDashboard, LogOut,
   Menu, Pencil, Search, ShieldCheck, Sparkles, UserRound, Users, X,
-  Share2, Award, CheckCircle2, RefreshCw, Eye, AlertTriangle
+  Share2, Award, CheckCircle2, RefreshCw, Eye, AlertTriangle, Trash2
 } from 'lucide-react';
 import {
   StudentProfile, AdminStudent, Passport,
@@ -161,7 +161,10 @@ function LandingPage() {
   const { data: user, isLoading } = useGetCurrentUser();
   const { data: health } = useHealthCheck({ query: { staleTime: 60000, queryKey: getHealthCheckQueryKey() } });
 
-  if (!isLoading && user) return <Redirect to="/dashboard" />;
+  if (!isLoading && user) {
+    if (user.role === 'admin') return <Redirect to="/admin" />;
+    return <Redirect to="/dashboard" />;
+  }
 
   return (
     <main className="min-h-[100dvh] overflow-hidden bg-[#f5f8fc]" data-testid="page-landing">
@@ -314,8 +317,9 @@ function AuthFallback({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         { data: { email: form.email, password: form.password } },
         {
           onSuccess: (res) => {
-            if (res.token) {
-              localStorage.setItem('vocalis_token', res.token);
+            const token = (res as unknown as { token?: string })?.token;
+            if (typeof token === 'string') {
+              localStorage.setItem('vocalis_token', token);
             }
             queryClient.invalidateQueries({ queryKey: ['/auth/me'] });
             if (res.user.role === 'admin') {
@@ -336,8 +340,9 @@ function AuthFallback({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         { data: form },
         {
           onSuccess: (res) => {
-            if (res.token) {
-              localStorage.setItem('vocalis_token', res.token);
+            const token = (res as unknown as { token?: string })?.token;
+            if (typeof token === 'string') {
+              localStorage.setItem('vocalis_token', token);
             }
             queryClient.invalidateQueries({ queryKey: ['/auth/me'] });
             setLocation('/dashboard');
@@ -487,6 +492,14 @@ function Shell({ children }: { children: ReactNode }) {
 
   if (isLoading) return <div className="min-h-[100dvh] bg-background p-6"><LoadingState /></div>;
   if (error || !user) return <Redirect to="/sign-in" />;
+
+  // Automatically route admin users to the Founder Workspace
+  if (user.role === 'admin' && (location === '/dashboard' || location === '/passport' || location === '/profile')) {
+    return <Redirect to="/admin" />;
+  }
+  if (user.role !== 'admin' && location === '/admin') {
+    return <Redirect to="/dashboard" />;
+  }
 
   const nav = user.role === 'admin'
     ? [{ href: '/admin', label: 'Students', icon: Users }]

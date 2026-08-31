@@ -1,7 +1,7 @@
 import path from "path";
 import { Router, type IRouter, type Request, type Response } from "express";
 import { db, usersTable, passportsTable } from "@workspace/db";
-import { eq, ilike, or, desc } from "drizzle-orm";
+import { eq, ilike, or, desc, and } from "drizzle-orm";
 import { requireAdmin } from "../lib/auth";
 import { generatePassportPdf } from "../lib/pdfGenerator";
 import { logger } from "../lib/logger";
@@ -21,8 +21,6 @@ router.get("/admin/students", requireAdmin, async (req: Request, res: Response) 
   try {
     const search = typeof req.query.search === "string" ? req.query.search.trim() : "";
 
-    let query = db.select().from(usersTable).orderBy(desc(usersTable.id));
-
     let students;
     if (search) {
       const searchPattern = `%${search}%`;
@@ -30,15 +28,22 @@ router.get("/admin/students", requireAdmin, async (req: Request, res: Response) 
         .select()
         .from(usersTable)
         .where(
-          or(
-            ilike(usersTable.fullName, searchPattern),
-            ilike(usersTable.email, searchPattern),
-            ilike(usersTable.vocalisId, searchPattern)
+          and(
+            eq(usersTable.role, "student"),
+            or(
+              ilike(usersTable.fullName, searchPattern),
+              ilike(usersTable.email, searchPattern),
+              ilike(usersTable.vocalisId, searchPattern)
+            )
           )
         )
         .orderBy(desc(usersTable.id));
     } else {
-      students = await query;
+      students = await db
+        .select()
+        .from(usersTable)
+        .where(eq(usersTable.role, "student"))
+        .orderBy(desc(usersTable.id));
     }
 
     const formatted = students.map((s) => ({
