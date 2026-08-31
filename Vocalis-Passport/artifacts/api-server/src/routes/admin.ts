@@ -71,7 +71,7 @@ router.get("/admin/students", requireAdmin, async (req: Request, res: Response) 
  */
 router.get("/admin/students/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const studentId = parseInt(req.params.id, 10);
+    const studentId = parseInt(req.params["id"] as string, 10);
     if (isNaN(studentId)) {
       res.status(400).json({ error: "Invalid student ID." });
       return;
@@ -116,7 +116,7 @@ router.get("/admin/students/:id", requireAdmin, async (req: Request, res: Respon
  */
 router.patch("/admin/students/:id", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const studentId = parseInt(req.params.id, 10);
+    const studentId = parseInt(req.params["id"] as string, 10);
     if (isNaN(studentId)) {
       res.status(400).json({ error: "Invalid student ID." });
       return;
@@ -172,7 +172,7 @@ router.patch("/admin/students/:id", requireAdmin, async (req: Request, res: Resp
  */
 router.post("/admin/students/:id/passport", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const studentId = parseInt(req.params.id, 10);
+    const studentId = parseInt(req.params["id"] as string, 10);
     if (isNaN(studentId)) {
       res.status(400).json({ error: "Invalid student ID." });
       return;
@@ -252,7 +252,7 @@ router.post("/admin/students/:id/passport", requireAdmin, async (req: Request, r
  */
 router.get("/admin/students/:id/passport/pdf", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const studentId = parseInt(req.params.id, 10);
+    const studentId = parseInt(req.params["id"] as string, 10);
     if (isNaN(studentId)) {
       res.status(400).json({ error: "Invalid student ID." });
       return;
@@ -301,7 +301,7 @@ router.get("/admin/students/:id/passport/pdf", requireAdmin, async (req: Request
  */
 router.post("/admin/students/:id/deactivate", requireAdmin, async (req: Request, res: Response) => {
   try {
-    const studentId = parseInt(req.params.id, 10);
+    const studentId = parseInt(req.params["id"] as string, 10);
     if (isNaN(studentId)) {
       res.status(400).json({ error: "Invalid student ID." });
       return;
