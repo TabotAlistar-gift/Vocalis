@@ -539,6 +539,13 @@ function Shell({ children }: { children: ReactNode }) {
               <p className="truncate text-xs font-medium text-[#f4c641]">{user.vocalisId}</p>
             </div>
           </div>
+          <button
+            onClick={handleSignOut}
+            className="mt-3.5 flex w-full items-center justify-center gap-2 rounded-xl border border-red-500/25 bg-red-500/10 py-2 text-xs font-bold text-red-200 transition-colors hover:bg-red-500/25 hover:text-white"
+            data-testid="button-sidebar-logout"
+          >
+            <LogOut className="h-3.5 w-3.5" /> Sign Out
+          </button>
         </div>
       </aside>
 
@@ -563,18 +570,26 @@ function Shell({ children }: { children: ReactNode }) {
   );
 }
 
-function ApiLogoutButton() {
-  const logout = useLogout();
-  const [, setLocation] = useLocation();
+function handleSignOut() {
+  localStorage.removeItem('vocalis_token');
+  try {
+    fetch('/api/auth/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
+  } catch {}
+  queryClient.clear();
+  queryClient.setQueryData(['/auth/me'], null);
+  window.location.href = '/';
+}
 
+function ApiLogoutButton() {
   return (
     <button
-      onClick={() => logout.mutate(undefined, { onSuccess: () => { queryClient.clear(); setLocation('/'); } })}
-      className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#d8e1ec] bg-white text-[#52617a] shadow-sm transition-colors hover:bg-destructive/10 hover:text-destructive"
-      title="Sign out"
+      onClick={handleSignOut}
+      className="inline-flex items-center gap-1.5 rounded-xl border border-[#d8e1ec] bg-white px-3 py-2 text-xs font-bold text-[#52617a] shadow-sm transition-colors hover:border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+      title="Sign out of account"
       data-testid="button-logout"
     >
       <LogOut className="h-4 w-4" />
+      <span className="hidden sm:inline">Sign out</span>
     </button>
   );
 }

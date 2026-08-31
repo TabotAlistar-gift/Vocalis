@@ -164,7 +164,7 @@ router.post("/auth/login", async (req: Request, res: Response) => {
  * POST /api/auth/logout
  */
 router.post("/auth/logout", (req: Request, res: Response) => {
-  res.clearCookie(COOKIE_NAME, { path: "/" });
+  res.clearCookie(COOKIE_NAME, { path: "/", sameSite: "none", secure: true });
   res.json({ message: "Logged out successfully" });
 });
 
