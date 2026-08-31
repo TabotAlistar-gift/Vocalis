@@ -42,7 +42,16 @@ const clerkPubKey = rawClerkKey && (rawClerkKey.startsWith('pk_test_') || rawCle
 const clerkProxyUrl = import.meta.env.VITE_CLERK_PROXY_URL;
 
 const levels = ['Level One', 'Level Two', 'Level Three', 'Level Four', 'Level Five', 'Level Six'];
-const badges = ['Explorer', 'Learner', 'Builder', 'Collaborator', 'Leader', 'Changemaker', 'Global Citizen'];
+const badges = ['Explorer', 'Learner', 'Builder', 'Collaborator', 'Leader', 'Global Citizen', 'Changemaker'];
+
+const levelToBadgeMap: Record<string, string> = {
+  'Level One': 'Explorer',
+  'Level Two': 'Learner',
+  'Level Three': 'Builder',
+  'Level Four': 'Collaborator',
+  'Level Five': 'Leader',
+  'Level Six': 'Global Citizen',
+};
 
 function initials(name?: string) {
   return (name || 'Vocalis Student').split(' ').map((part) => part[0]).slice(0, 2).join('').toUpperCase();
@@ -67,21 +76,27 @@ function errorText(error: unknown) {
 
 function Logo({ dark = false, className }: { dark?: boolean; className?: string }) {
   return (
-    <Link href="/" className={cn('inline-flex items-center gap-2.5 transition-opacity hover:opacity-90', className)} data-testid="link-logo">
-      <img src="/vocalist logo.png" alt="Vocalis Logo" className="h-8 w-auto object-contain" />
+    <Link href="/" className={cn('inline-flex items-center gap-2.5 transition-opacity hover:opacity-90 shrink-0', className)} data-testid="link-logo">
+      <img src="/vocalist logo.png" alt="Vocalis Logo" className="h-7 w-auto sm:h-8 object-contain" />
       <div className="flex flex-col">
         <div className="flex items-center gap-1">
-          <span className={cn("font-display text-xl font-bold tracking-tight", dark ? "text-white" : "text-[#0e2347]")}>Vocalis</span>
+          <span className={cn("font-display text-lg sm:text-xl font-bold tracking-tight", dark ? "text-white" : "text-[#0e2347]")}>Vocalis</span>
           <span className="h-1.5 w-1.5 rounded-full bg-[#165de8]" />
         </div>
-        <span className={cn("text-[9px] font-semibold uppercase tracking-[0.14em]", dark ? "text-[#f4c641]" : "text-[#52617a]")}>Passport</span>
+        <span className={cn("text-[8px] sm:text-[9px] font-semibold uppercase tracking-[0.14em]", dark ? "text-[#f4c641]" : "text-[#52617a]")}>Passport</span>
       </div>
     </Link>
   );
 }
 
 function Avatar({ profile, size = 'md' }: { profile?: Partial<StudentProfile> | Partial<AdminStudent> | null; size?: 'sm' | 'md' | 'lg' | 'xl' }) {
-  const sizeClass = size === 'xl' ? 'h-28 w-28 text-3xl' : size === 'lg' ? 'h-20 w-20 text-xl' : size === 'sm' ? 'h-9 w-9 text-xs' : 'h-12 w-12 text-sm';
+  const sizeClass = {
+    sm: 'h-9 w-9 text-xs',
+    md: 'h-12 w-12 text-sm',
+    lg: 'h-16 w-16 text-lg',
+    xl: 'h-24 w-24 text-2xl',
+  }[size];
+
   return profile?.profilePhotoUrl ? (
     <img src={profile.profilePhotoUrl} alt={profile.fullName || 'Student portrait'} className={cn(sizeClass, 'rounded-2xl object-cover ring-2 ring-white/80 shadow-md')} data-testid="img-profile-avatar" />
   ) : (
@@ -127,12 +142,14 @@ function StatusPill({ status }: { status?: string | null }) {
 function PublicNav() {
   return (
     <header className="absolute inset-x-0 top-0 z-20">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3.5 sm:px-6 sm:py-5 lg:px-8">
         <Logo />
-        <nav className="flex items-center gap-3">
-          <Link href="/sign-in" className="rounded-xl px-4 py-2 text-sm font-semibold text-[#0e2347] transition-colors hover:bg-white/60" data-testid="link-sign-in">Sign in</Link>
-          <Link href="/sign-up" className="button-primary inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold shadow-md transition-transform active:scale-95" data-testid="link-sign-up">
-            Create Passport <ArrowRight className="h-4 w-4" />
+        <nav className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <Link href="/sign-in" className="whitespace-nowrap rounded-xl px-2.5 py-1.5 text-xs font-semibold text-[#0e2347] transition-colors hover:bg-white/60 sm:px-4 sm:py-2 sm:text-sm" data-testid="link-sign-in">
+            Sign in
+          </Link>
+          <Link href="/sign-up" className="button-primary inline-flex shrink-0 items-center gap-1.5 px-3 py-1.5 text-xs font-bold shadow-md transition-transform active:scale-95 whitespace-nowrap sm:px-5 sm:py-2.5 sm:text-sm sm:gap-2" data-testid="link-sign-up">
+            <span>Create Passport</span> <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
           </Link>
         </nav>
       </div>
@@ -434,15 +451,25 @@ function Field({ label, value, onChange, placeholder, type = 'text', testId, req
   );
 }
 
-function SelectField({ label, value, options, onChange, testId }: { label: string; value: string; options: string[]; onChange: (value: string) => void; testId: string }) {
+function SelectField({ label, value, options, onChange, testId, disabled, helpText }: { label: string; value: string; options: string[]; onChange: (value: string) => void; testId: string; disabled?: boolean; helpText?: string }) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-bold text-[#203452]">{label}</Label>
-      <select value={value} onChange={(event) => onChange(event.target.value)} className="h-11 w-full rounded-xl border border-[#d8e1ec] bg-white px-3 text-sm font-medium text-[#0e2347] shadow-sm outline-none focus:border-[#165de8] focus:ring-1 focus:ring-[#165de8]" data-testid={testId}>
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        disabled={disabled}
+        className={cn(
+          "h-11 w-full rounded-xl border border-[#d8e1ec] bg-white px-3 text-sm font-medium text-[#0e2347] shadow-sm outline-none focus:border-[#165de8] focus:ring-1 focus:ring-[#165de8]",
+          disabled && "bg-[#f5f8fc] text-[#52617a] cursor-not-allowed opacity-90"
+        )}
+        data-testid={testId}
+      >
         {options.map((option) => (
           <option key={option} value={option}>{option}</option>
         ))}
       </select>
+      {helpText && <p className="text-[11px] text-muted-foreground">{helpText}</p>}
     </div>
   );
 }
@@ -936,9 +963,26 @@ function ProfilePage() {
 
             <Field label="Phone Number" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} placeholder="+234 800 000 0000" testId="input-profile-phone" required={false} />
 
-            <SelectField label="Current Level" value={form.level} options={levels} onChange={(value) => setForm({ ...form, level: value })} testId="select-profile-level" />
+            <SelectField
+              label="Current Level"
+              value={form.level}
+              options={levels}
+              onChange={(value) => {
+                const newBadge = levelToBadgeMap[value] || badges[0];
+                setForm({ ...form, level: value, badge: newBadge });
+              }}
+              testId="select-profile-level"
+            />
 
-            <SelectField label="Vocalis Badge" value={form.badge} options={badges} onChange={(value) => setForm({ ...form, badge: value })} testId="select-profile-badge" />
+            <SelectField
+              label="Vocalis Badge (Auto-Assigned)"
+              value={form.badge}
+              options={badges}
+              onChange={() => {}}
+              disabled={true}
+              helpText="Badge is automatically assigned based on your level."
+              testId="select-profile-badge"
+            />
 
             <Field label="Date Joined" value={form.dateJoined} onChange={(value) => setForm({ ...form, dateJoined: value })} placeholder="" type="date" testId="input-profile-date-joined" />
           </div>
@@ -1444,8 +1488,23 @@ function AdminStudentPanel({ student, close }: { student: AdminStudent; close: (
             <Field label="Phone" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} placeholder="" testId="input-admin-phone" required={false} />
             
             <div className="grid grid-cols-2 gap-3">
-              <SelectField label="Level" value={form.level} options={levels} onChange={(value) => setForm({ ...form, level: value })} testId="select-admin-level" />
-              <SelectField label="Badge" value={form.badge} options={badges} onChange={(value) => setForm({ ...form, badge: value })} testId="select-admin-badge" />
+              <SelectField
+                label="Level"
+                value={form.level}
+                options={levels}
+                onChange={(value) => {
+                  const newBadge = levelToBadgeMap[value] || badges[0];
+                  setForm({ ...form, level: value, badge: newBadge });
+                }}
+                testId="select-admin-level"
+              />
+              <SelectField
+                label="Badge (Auto-Assigned)"
+                value={form.badge}
+                options={badges}
+                onChange={(value) => setForm({ ...form, badge: value })}
+                testId="select-admin-badge"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
