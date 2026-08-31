@@ -417,8 +417,22 @@
   .admin-toolbar { flex-direction:column; }
   .student-row { grid-template-columns:1fr 24px; gap:.5rem; padding:.9rem 1rem; }
   .student-row > span { display:none; }
-  .passport-full-preview { padding:.6rem; }
-  .passport-render { min-width:530px; }
+  .passport-full-preview { padding:.5rem; overflow-x:hidden; }
+  .passport-render { min-width:unset; width:100%; max-width:100%; border-radius:.85rem; }
+  .passport-render-navy { padding:1.1rem 0.85rem; }
+  .passport-render-bottom { bottom:1.2rem; left:0.85rem; }
+  .passport-render-bottom p { font-size:.65rem; }
+  .passport-render-bottom strong { font-size:1.25rem; }
+  .passport-render-bottom span { font-size:.45rem; }
+  .passport-render-paper { padding:1rem .75rem .6rem; gap:.5rem; }
+  .render-photo { height:5.8rem; width:4.5rem; border-radius:.6rem; }
+  .render-field { padding:.2rem 0; border-bottom-width:1px; }
+  .render-field span { font-size:.38rem; }
+  .render-field strong { font-size:.56rem; }
+  .render-signature { padding-top:.2rem; padding-bottom:.1rem; }
+  .render-signature .vocalis-signature { font-size:1.45rem; }
+  .render-signature span { font-size:.38rem; }
+  .render-signature .text-sm { font-size:.45rem; }
   .passport-hero-wrap { width:100%; max-width:100%; padding:.5rem 0; }
   .passport-card { transform:none !important; width:100%; border-radius:.85rem; }
   .passport-shadow { display:none; }
@@ -435,6 +449,12 @@
   .passport-card-paper { padding: 1rem 0.7rem 0.7rem; gap: 0.4rem; }
   .passport-hero-wrap { padding: 0; }
   .passport-card { transform: none !important; margin: 0 auto; }
+  .passport-render-navy { padding: 0.9rem 0.65rem; }
+  .passport-render-paper { padding: 0.8rem 0.55rem 0.5rem; gap: 0.35rem; }
+  .render-photo { height: 4.8rem; width: 3.7rem; border-radius: 0.5rem; }
+  .render-field span { font-size: 0.33rem; }
+  .render-field strong { font-size: 0.48rem; }
+  .render-signature .vocalis-signature { font-size: 1.25rem; }
 }
 
 /**

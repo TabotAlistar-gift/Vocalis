@@ -1061,17 +1061,37 @@ function PassportPage() {
 
   async function handleDownload() {
     setFeedback(null);
-    const result = await download.refetch();
-    if (result.data instanceof Blob) {
-      const url = URL.createObjectURL(result.data);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `Vocalis_Passport_${passport?.vocalisId || 'credential'}.pdf`;
-      anchor.click();
-      URL.revokeObjectURL(url);
-      setFeedback({ type: 'success', message: 'PDF downloaded successfully to your device!' });
-    } else {
-      setFeedback({ type: 'error', message: errorText(result.error) });
+    try {
+      const result = await download.refetch();
+      if (result.data instanceof Blob) {
+        const blob = new Blob([result.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const filename = `Vocalis_Passport_${passport?.vocalisId || 'credential'}.pdf`;
+
+        const anchor = document.createElement('a');
+        anchor.style.display = 'none';
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.setAttribute('download', filename);
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+
+        document.body.appendChild(anchor);
+        anchor.click();
+
+        setTimeout(() => {
+          try {
+            document.body.removeChild(anchor);
+            window.URL.revokeObjectURL(url);
+          } catch {}
+        }, 60000);
+
+        setFeedback({ type: 'success', message: 'PDF downloaded successfully to your device!' });
+      } else {
+        setFeedback({ type: 'error', message: errorText(result.error || 'Failed to download passport PDF.') });
+      }
+    } catch (err) {
+      setFeedback({ type: 'error', message: errorText(err) });
     }
   }
 
@@ -1482,16 +1502,35 @@ function AdminStudentPanel({ student, close }: { student: AdminStudent; close: (
   }
 
   async function handleDownload() {
-    const result = await download.refetch();
-    if (result.data instanceof Blob) {
-      const url = URL.createObjectURL(result.data);
-      const anchor = document.createElement('a');
-      anchor.href = url;
-      anchor.download = `Vocalis_Passport_${student.vocalisId}.pdf`;
-      anchor.click();
-      URL.revokeObjectURL(url);
-    } else {
-      setFeedback(errorText(result.error));
+    try {
+      const result = await download.refetch();
+      if (result.data instanceof Blob) {
+        const blob = new Blob([result.data], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        const filename = `Vocalis_Passport_${student.vocalisId}.pdf`;
+
+        const anchor = document.createElement('a');
+        anchor.style.display = 'none';
+        anchor.href = url;
+        anchor.download = filename;
+        anchor.setAttribute('download', filename);
+        anchor.target = '_blank';
+        anchor.rel = 'noopener noreferrer';
+
+        document.body.appendChild(anchor);
+        anchor.click();
+
+        setTimeout(() => {
+          try {
+            document.body.removeChild(anchor);
+            window.URL.revokeObjectURL(url);
+          } catch {}
+        }, 60000);
+      } else {
+        setFeedback(errorText(result.error || 'Failed to download passport PDF.'));
+      }
+    } catch (err) {
+      setFeedback(errorText(err));
     }
   }
 
