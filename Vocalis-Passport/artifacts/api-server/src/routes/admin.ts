@@ -307,37 +307,28 @@ router.post("/admin/students/:id/deactivate", requireAdmin, async (req: Request,
       return;
     }
 
-    const [updated] = await db
-      .update(usersTable)
-      .set({ active: false })
+    // Delete associated passport
+    await db.delete(passportsTable).where(eq(passportsTable.studentId, studentId));
+
+    // Delete the student user record completely so email and credentials are fully freed
+    const [deleted] = await db
+      .delete(usersTable)
       .where(eq(usersTable.id, studentId))
       .returning();
 
-    if (!updated) {
+    if (!deleted) {
       res.status(404).json({ error: "Student not found." });
       return;
     }
 
     res.json({
-      id: updated.id,
-      fullName: updated.fullName,
-      email: updated.email,
-      phone: updated.phone,
-      vocalisId: updated.vocalisId,
-      level: updated.level,
-      badge: updated.badge,
-      role: updated.role,
-      passportStatus: updated.passportStatus,
-      profilePhotoUrl: formatProfileUrl(updated.profilePhotoPath),
-      dateJoined: updated.dateJoined,
-      dateIssued: updated.dateIssued,
-      active: updated.active,
-      createdAt: updated.createdAt,
-      updatedAt: updated.updatedAt,
+      success: true,
+      message: "Student account deleted and email credentials freed.",
+      student: deleted,
     });
   } catch (error) {
-    logger.error({ err: error }, "Error deactivating student");
-    res.status(500).json({ error: "Failed to deactivate student." });
+    logger.error({ err: error }, "Error deleting student account");
+    res.status(500).json({ error: "Failed to delete student account." });
   }
 });
 

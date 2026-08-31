@@ -314,6 +314,9 @@ function AuthFallback({ mode }: { mode: 'sign-in' | 'sign-up' }) {
         { data: { email: form.email, password: form.password } },
         {
           onSuccess: (res) => {
+            if (res.token) {
+              localStorage.setItem('vocalis_token', res.token);
+            }
             queryClient.invalidateQueries({ queryKey: ['/auth/me'] });
             if (res.user.role === 'admin') {
               setLocation('/admin');
@@ -332,7 +335,10 @@ function AuthFallback({ mode }: { mode: 'sign-in' | 'sign-up' }) {
       registerMutation.mutate(
         { data: form },
         {
-          onSuccess: () => {
+          onSuccess: (res) => {
+            if (res.token) {
+              localStorage.setItem('vocalis_token', res.token);
+            }
             queryClient.invalidateQueries({ queryKey: ['/auth/me'] });
             setLocation('/dashboard');
           },
@@ -1428,13 +1434,14 @@ function AdminStudentPanel({ student, close }: { student: AdminStudent; close: (
   }
 
   function handleDeactivate() {
-    if (!window.confirm(`Are you sure you want to deactivate ${student.fullName}'s account?`)) return;
+    if (!window.confirm(`Are you sure you want to delete ${student.fullName}'s account? This will permanently remove the record and free up their email and credentials.`)) return;
     deactivate.mutate(
       { id: student.id },
       {
         onSuccess: () => {
-          setFeedback('Student account deactivated.');
+          setFeedback('Student account deleted and email credentials freed.');
           qc.invalidateQueries({ queryKey: getListAdminStudentsQueryKey() });
+          close();
         },
         onError: (err) => setFeedback(errorText(err)),
       }
@@ -1544,8 +1551,8 @@ function AdminStudentPanel({ student, close }: { student: AdminStudent; close: (
                   <Download className="mr-2 h-4 w-4" /> Download Passport PDF
                 </Button>
               )}
-              <Button variant="ghost" className="mt-2 h-10 w-full justify-start rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={handleDeactivate} disabled={!student.active || deactivate.isPending} data-testid="button-deactivate-student">
-                <ShieldCheck className="mr-2 h-4 w-4" /> {student.active ? 'Deactivate Account' : 'Account Deactivated'}
+              <Button variant="ghost" className="mt-2 h-10 w-full justify-start rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={handleDeactivate} disabled={deactivate.isPending} data-testid="button-deactivate-student">
+                <Trash2 className="mr-2 h-4 w-4" /> Delete & Free Credentials
               </Button>
             </div>
           </>
