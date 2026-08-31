@@ -1,0 +1,540 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@plugin "@tailwindcss/typography";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-card-border: hsl(var(--card-border));
+
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-popover-border: hsl(var(--popover-border));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-secondary-border: var(--secondary-border);
+
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-muted-border: var(--muted-border);
+
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-accent-border: var(--accent-border);
+
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-destructive-border: var(--destructive-border);
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --color-sidebar: hsl(var(--sidebar));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-primary-border: var(--sidebar-primary-border);
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-accent-border: var(--sidebar-accent-border);
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --font-sans: var(--app-font-sans);
+  --font-serif: var(--app-font-serif);
+  --font-mono: var(--app-font-mono);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* LIGHT MODE */
+:root {
+  --button-outline: rgba(0, 0, 0, 0.1);
+  --badge-outline: rgba(0, 0, 0, 0.05);
+
+  /* Automatic computation of border around primary / danger buttons */
+  --opaque-button-border-intensity: -8; /* In terms of percentages */
+
+  /* Backgrounds applied on top of other backgrounds when hovered/active */
+  --elevate-1: rgba(0, 0, 0, 0.03);
+  --elevate-2: rgba(0, 0, 0, 0.08);
+
+  --background: 216 50% 96%;
+  --foreground: 222 48% 14%;
+  --border: 214 27% 84%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 48% 14%;
+  --card-border: 214 27% 87%;
+  --sidebar: 222 55% 12%;
+  --sidebar-foreground: 210 40% 96%;
+  --sidebar-border: 222 38% 23%;
+  --sidebar-primary: 213 91% 55%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 222 42% 19%;
+  --sidebar-accent-foreground: 210 40% 96%;
+  --sidebar-ring: 213 91% 55%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 48% 14%;
+  --popover-border: 214 27% 84%;
+  --primary: 222 55% 16%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 213 85% 95%;
+  --secondary-foreground: 222 55% 22%;
+  --muted: 216 35% 92%;
+  --muted-foreground: 216 18% 43%;
+  --accent: 345 80% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 67% 47%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 214 27% 84%;
+  --ring: 213 91% 55%;
+  --chart-1: 213 91% 55%;
+  --chart-2: 345 80% 50%;
+  --chart-3: 42 89% 53%;
+  --chart-4: 163 52% 40%;
+  --chart-5: 222 55% 16%;
+  --app-font-sans: 'DM Sans', sans-serif;
+  --app-font-serif: 'Space Grotesk', sans-serif;
+  --app-font-mono: 'Space Grotesk', monospace;
+  --radius: 0.5rem; /* 8px */
+  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0); /*replace with H S L */
+  --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0); /*replace with H S L */
+  --shadow-sm:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-md:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-lg:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-xl:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+
+  /* Automatically computed borders - intensity can be controlled by the user by the --opaque-button-border-intensity setting */
+
+  /* Fallback for older browsers */
+  --sidebar-primary-border: hsl(var(--sidebar-primary));
+  --sidebar-primary-border: hsl(
+    from hsl(var(--sidebar-primary)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
+
+  /* Fallback for older browsers */
+  --sidebar-accent-border: hsl(var(--sidebar-accent));
+  --sidebar-accent-border: hsl(
+    from hsl(var(--sidebar-accent)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
+
+  /* Fallback for older browsers */
+  --primary-border: hsl(var(--primary));
+  --primary-border: hsl(
+    from hsl(var(--primary)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
+
+  /* Fallback for older browsers */
+  --secondary-border: hsl(var(--secondary));
+  --secondary-border: hsl(
+    from hsl(var(--secondary)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
+
+  /* Fallback for older browsers */
+  --muted-border: hsl(var(--muted));
+  --muted-border: hsl(
+    from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) /
+      alpha
+  );
+
+  /* Fallback for older browsers */
+  --accent-border: hsl(var(--accent));
+  --accent-border: hsl(
+    from hsl(var(--accent)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
+
+  /* Fallback for older browsers */
+  --destructive-border: hsl(var(--destructive));
+  --destructive-border: hsl(
+    from hsl(var(--destructive)) h s
+      calc(l + var(--opaque-button-border-intensity)) / alpha
+  );
+}
+
+.dark {
+  --button-outline: rgba(255, 255, 255, 0.1);
+  --badge-outline: rgba(255, 255, 255, 0.05);
+
+  --opaque-button-border-intensity: 9; /* In terms of percentages */
+
+  /* Backgrounds applied on top of other backgrounds when hovered/active */
+  --elevate-1: rgba(255, 255, 255, 0.04);
+  --elevate-2: rgba(255, 255, 255, 0.09);
+
+  --background: 222 48% 10%;
+  --foreground: 210 40% 96%;
+  --border: 222 30% 25%;
+  --card: 222 42% 14%;
+  --card-foreground: 210 40% 96%;
+  --card-border: 222 30% 25%;
+  --sidebar: 222 55% 8%;
+  --sidebar-foreground: 210 40% 96%;
+  --sidebar-border: 222 30% 20%;
+  --sidebar-primary: 213 91% 55%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 222 42% 17%;
+  --sidebar-accent-foreground: 210 40% 96%;
+  --sidebar-ring: 213 91% 55%;
+  --popover: 222 42% 14%;
+  --popover-foreground: 210 40% 96%;
+  --popover-border: 222 30% 25%;
+  --primary: 213 91% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 222 35% 22%;
+  --secondary-foreground: 210 40% 96%;
+  --muted: 222 35% 20%;
+  --muted-foreground: 216 20% 68%;
+  --accent: 345 80% 55%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 67% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --input: 222 30% 29%;
+  --ring: 213 91% 55%;
+  --chart-1: 213 91% 55%;
+  --chart-2: 345 80% 55%;
+  --chart-3: 42 89% 53%;
+  --chart-4: 163 52% 48%;
+  --chart-5: 210 40% 96%;
+
+  --shadow-2xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-xs: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-sm:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 1px 2px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-md:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 2px 4px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-lg:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 4px 6px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-xl:
+    0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0),
+    0px 8px 10px -1px hsl(202.8169 89.1213% 53.1373% / 0);
+  --shadow-2xl: 0px 2px 0px 0px hsl(202.8169 89.1213% 53.1373% / 0);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .font-display { font-family: var(--app-font-serif); }
+  .button-primary, .button-secondary, .button-quiet, .nav-link, .icon-button { align-items: center; display: inline-flex; justify-content: center; gap: .5rem; border-radius: .45rem; font-size: .875rem; font-weight: 700; transition: transform .2s ease, background-color .2s ease, color .2s ease; }
+  .button-primary { background: #165de8; color: white; padding: .7rem 1rem; box-shadow: 0 7px 16px rgba(22, 93, 232, .18); }
+  .button-primary:hover { background: #0d4ed1; transform: translateY(-1px); }
+  .button-secondary { border: 1px solid #cfd9e7; background: white; color: #203452; padding: .7rem 1rem; }
+  .button-secondary:hover { border-color: #165de8; color: #165de8; }
+  .button-quiet, .nav-link { color: #52617a; padding: .7rem .85rem; }
+  .button-quiet:hover, .nav-link:hover { color: #165de8; }
+  .icon-button { height: 2.3rem; width: 2.3rem; border: 1px solid #d6e0eb; background: white; color: #52617a; }
+  .icon-button:hover { color: #165de8; border-color: #165de8; }
+  .eyebrow { display: flex; align-items: center; gap: .55rem; color: #165de8; font-size: .68rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+  .eyebrow-line { height: 2px; width: 1.8rem; background: #ed1d40; display: inline-block; }
+  .text-gradient { background: linear-gradient(100deg, #ed1d40, #165de8); background-clip: text; color: transparent; }
+  .animate-rise { animation: rise .6s ease both; }
+  .animate-float { animation: float 5s ease-in-out infinite; }
+  .skeleton { background: linear-gradient(90deg, #e8eef5 25%, #f3f6fa 50%, #e8eef5 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+  .app-shell { min-height: 100dvh; background: #f5f8fc; }
+  .app-sidebar { position: fixed; z-index: 30; display: flex; min-height: 100dvh; width: 246px; flex-direction: column; background: #0e2347; padding: 1.45rem 1rem; color: white; transition: transform .25s ease; }
+  .sidebar-top { display:flex; align-items:center; justify-content:space-between; padding:0 .25rem; }
+  .sidebar-top img { width: 142px; height: 58px; object-fit: contain; object-position: left; filter: brightness(0) invert(1); }
+  .sidebar-context { display:flex; align-items:center; gap:.55rem; margin-top:2.1rem; color:rgba(255,255,255,.48); font-size:.68rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase; }
+  .sidebar-context-dot { height:.4rem; width:.4rem; border-radius:999px; background:#f4c641; }
+  .sidebar-link { display:flex; align-items:center; gap:.75rem; border-radius:.45rem; padding:.75rem .8rem; color:rgba(255,255,255,.6); font-size:.875rem; font-weight:600; transition:color .2s ease, background-color .2s ease; }
+  .sidebar-link:hover, .sidebar-link-active { background:rgba(255,255,255,.09); color:white; }
+  .sidebar-link-active { box-shadow:inset 3px 0 #f4c641; }
+  .sidebar-bottom { margin-top:auto; }
+  .sidebar-tip { display:flex; gap:.65rem; border:1px solid rgba(255,255,255,.1); border-radius:.6rem; padding:.8rem; color:rgba(255,255,255,.56); font-size:.7rem; line-height:1.5; }
+  .sidebar-tip p { margin:0; }
+  .sidebar-close, .menu-button { display:none; }
+  .app-main { margin-left:246px; min-height:100dvh; }
+  .app-header { display:flex; height:76px; align-items:center; border-bottom:1px solid #dce5ef; padding:0 2.2rem; }
+  .app-content { max-width:1180px; margin:0 auto; padding:2.3rem 2.2rem 4rem; }
+  .card-kicker { color:#165de8; font-size:.67rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+  .card-title { color:#0e2347; font-family:var(--app-font-serif); font-size:1.25rem; font-weight:700; }
+  .content-card { border:1px solid #dce5ef; border-radius:.7rem; background:white; box-shadow:0 10px 28px rgba(14,35,71,.035); }
+  .dashboard-hero { display:flex; align-items:center; justify-content:space-between; gap:2rem; overflow:hidden; border-radius:.7rem; background:linear-gradient(108deg,#0e2347,#15366d); padding:2rem 2.2rem; color:white; position:relative; }
+  .dashboard-hero:after { content:""; position:absolute; right:-5rem; top:-8rem; height:22rem; width:22rem; border:1px solid rgba(255,255,255,.1); border-radius:50%; box-shadow:0 0 0 2rem rgba(255,255,255,.02), 0 0 0 4rem rgba(255,255,255,.02); }
+  .dashboard-progress { position:relative; z-index:1; flex-shrink:0; text-align:center; }
+  .dashboard-progress p { margin-top:.7rem; color:rgba(255,255,255,.55); font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; }
+  .progress-ring { display:grid; height:8rem; width:8rem; place-items:center; border-radius:50%; background:conic-gradient(#f4c641 var(--progress),rgba(255,255,255,.14) 0); position:relative; }
+  .progress-ring:before { content:""; position:absolute; inset:8px; border-radius:50%; background:#102b58; }
+  .progress-ring span { position:relative; z-index:1; font-family:var(--app-font-serif); font-size:1.65rem; font-weight:700; }
+  .progress-ring small { font-family:var(--app-font-sans); font-size:.7rem; margin-left:2px; }
+  .round-link { display:grid; height:2rem; width:2rem; place-items:center; border:1px solid #d8e2ed; border-radius:50%; color:#52617a; }
+  .round-link:hover { color:#165de8; border-color:#165de8; }
+  .step-row { display:flex; align-items:center; gap:.65rem; border-bottom:1px solid #edf1f6; padding:.78rem 0; color:#334562; font-size:.875rem; font-weight:600; }
+  .step-row:last-child { border-bottom:0; }
+  .step-check { display:grid; height:1.3rem; width:1.3rem; place-items:center; border:1px solid #c9d5e3; border-radius:50%; color:white; }
+  .step-check-done { border-color:#1c9a61; background:#1c9a61; }
+  .status-pill { display:inline-flex; align-items:center; gap:.35rem; border-radius:999px; padding:.28rem .55rem; font-size:.65rem; font-weight:800; letter-spacing:.02em; }
+  .status-active { background:#dff6e9; color:#197044; }
+  .status-draft { background:#fff3d4; color:#8d6614; }
+  .profile-photo-card { display:flex; min-height:420px; flex-direction:column; align-items:center; justify-content:center; overflow:hidden; padding:2rem; position:relative; text-align:center; }
+  .profile-photo-halo { position:absolute; top:-5rem; height:20rem; width:20rem; border-radius:50%; background:#eef3ff; }
+  .profile-photo-card > *:not(.profile-photo-halo) { position:relative; }
+  .form-error { display:flex; align-items:center; gap:.5rem; border-radius:.5rem; background:#fff0f0; padding:.7rem .8rem; color:#af2828; font-size:.8rem; }
+  .passport-preview-layout { display:grid; gap:1.3rem; align-items:start; grid-template-columns:minmax(0,1.55fr) minmax(230px,.45fr); }
+  .passport-full-preview { overflow:auto; border-radius:.7rem; border:1px solid #dce5ef; background:#e8edf4; padding:1.4rem; }
+  .passport-render { display:grid; aspect-ratio:1.53 / 1; min-width:580px; overflow:hidden; border-radius:1rem; background:#f6f7fa; box-shadow:0 18px 30px rgba(14,35,71,.14); grid-template-columns:.64fr 1.36fr; }
+  .passport-render-navy { position:relative; overflow:hidden; background:#061831; color:white; padding:1.8rem; }
+  .passport-render-logo { width:105px; height:54px; object-fit:contain; filter:brightness(0) invert(1); object-position:left; }
+  .passport-render-bottom { position:absolute; z-index:1; bottom:4.2rem; left:1.8rem; }
+  .passport-render-bottom p { margin:0; font-family:var(--app-font-serif); font-size:.85rem; font-weight:700; letter-spacing:.2em; color:rgba(255,255,255,.9); }
+  .passport-render-bottom strong { display:block; margin-top:.25rem; color:#f4c641; font-family:var(--app-font-serif); font-size:1.85rem; letter-spacing:.1em; }
+  .passport-render-bottom span { display:block; margin-top:.5rem; color:rgba(255,255,255,.65); font-size:.55rem; }
+  .passport-render-paper { position:relative; display:grid; grid-template-columns:.34fr 1fr; gap:1.2rem; padding:2rem 1.6rem 1.2rem; background:#f5f6f9; background-image:radial-gradient(#d7dee9 1px,transparent 1px); background-size:18px 18px; overflow:hidden; }
+  /* Centralized, larger Logo Watermark */
+  .passport-render-paper:before { content:""; position:absolute; left:50%; top:48%; transform:translate(-50%, -50%); width:90%; height:90%; background:url('/logo.png') center/contain no-repeat; opacity:.10; pointer-events:none; z-index:0; }
+  .render-photo { position:relative; z-index:1; height:9.5rem; width:7.4rem; overflow:hidden; border-radius:1rem; background:#d9dee7; box-shadow:0 4px 12px rgba(14,35,71,.08); }
+  .render-photo img { height:100%; width:100%; object-fit:cover; }
+  .render-photo > div { height:100%; width:100%; border-radius:0; }
+  .render-info { position:relative; z-index:1; grid-column:2; margin-top:-.2rem; display:flex; flex-direction:column; justify-content:space-between; }
+  .render-field { display:flex; align-items:center; border-bottom:1.5px solid #205493; padding:.36rem 0; }
+  .render-field span { display:block; color:#24406c; font-size:.48rem; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+  .render-field strong { display:block; color:#0e2347; font-size:.78rem; font-weight:700; }
+  .render-signature { position:relative; z-index:1; grid-column:1 / -1; align-self:end; display:flex; align-items:flex-end; justify-content:space-between; padding-top:.4rem; padding-bottom:.2rem; }
+  .empty-passport, .empty-admin, .admin-selection { display:flex; min-height:360px; flex-direction:column; align-items:center; justify-content:center; border:1px dashed #c6d3e2; border-radius:.7rem; background:rgba(255,255,255,.55); padding:2rem; text-align:center; }
+  .admin-count { display:flex; align-items:center; gap:.5rem; border-radius:999px; background:#e9f0ff; padding:.55rem .8rem; color:#165de8; font-size:.75rem; font-weight:700; }
+  .admin-toolbar { display:flex; gap:.7rem; margin-bottom:1rem; }
+  .admin-grid { display:grid; gap:1rem; grid-template-columns:minmax(0,1fr) 350px; align-items:start; }
+  .student-row { display:grid; width:100%; grid-template-columns:1.5fr 1fr .7fr .6fr 24px; align-items:center; gap:1rem; border-bottom:1px solid #edf1f6; padding:1rem 1.25rem; text-align:left; transition:background-color .2s ease; }
+  .student-row:hover, .student-row-selected { background:#f1f5fb; }
+  .student-row:last-child { border-bottom:0; }
+  .admin-panel { position:sticky; top:1.3rem; }
+  .auth-page { display:grid; min-height:100dvh; grid-template-columns:.85fr 1.15fr; background:#f5f8fc; }
+  .auth-art { position:relative; overflow:hidden; background:#0e2347; padding:1.5rem 2.4rem; }
+  .auth-art img { filter:brightness(0) invert(1); width:142px; object-position:left; }
+  .auth-art:after { content:""; position:absolute; bottom:-12rem; left:-4rem; height:32rem; width:32rem; border:1px solid rgba(255,255,255,.11); border-radius:50%; box-shadow:0 0 0 3rem rgba(255,255,255,.03), 0 0 0 6rem rgba(255,255,255,.03); }
+  .auth-art-copy { position:relative; z-index:1; margin-top:34vh; }
+  .auth-form-side { display:flex; align-items:center; justify-content:center; padding:2rem; }
+  .auth-clerk { display:flex; min-height:100dvh; align-items:center; justify-content:center; background:#f5f8fc; padding:1rem; }
+  .passport-hero-wrap { position:relative; width:min(100%, 560px); padding:1rem; }
+  .passport-shadow { position:absolute; inset:2.7rem 1.8rem 2rem 2.8rem; border-radius:1.4rem; background:#bac7d8; filter:blur(20px); transform:rotate(-5deg) translateY(10px); }
+  .passport-card { position:relative; display:grid; aspect-ratio:1.53 / 1; overflow:hidden; border:1px solid #bac5d4; border-radius:1.15rem; background:#f6f7fa; box-shadow:0 25px 45px rgba(14,35,71,.2); grid-template-columns:.64fr 1.36fr; transform:rotate(-4deg); }
+  
+  .passport-card-navy { position:relative; overflow:hidden; background:#061831; color:#fff; padding:1.3rem; z-index:1; }
+  .passport-mark img { width:74px; height:44px; object-fit:contain; object-position:left; }
+  .passport-wordmark { position:relative; z-index:1; margin:.4rem 0 0; font-family:var(--app-font-serif); font-size:1.8rem; letter-spacing:-.05em; }
+  .passport-wordmark span { color:#2d78ef; }
+  .passport-tagline { position:relative; z-index:1; margin:.1rem 0; color:rgba(255,255,255,.7); font-size:.43rem; }
+  .passport-art-lines { position:absolute; bottom:-7rem; left:-4rem; height:17rem; width:22rem; border:1px solid rgba(255,255,255,.13); border-radius:50%; box-shadow:0 0 0 1rem rgba(255,255,255,.03), 0 0 0 2rem rgba(255,255,255,.03), 0 0 0 3rem rgba(255,255,255,.03); }
+  
+  .passport-card-paper { position:relative; display:grid; grid-template-columns:.34fr 1fr; gap:.6rem; padding:1.4rem 1rem 1rem; background:#f5f6f9; background-image:radial-gradient(#d7dee9 1px,transparent 1px); background-size:13px 13px; overflow:hidden; }
+  /* Centralized, larger Logo Watermark */
+  .passport-card-paper:before { content:""; position:absolute; left:50%; top:48%; transform:translate(-50%, -50%); width:90%; height:90%; background:url('/logo.png') center/contain no-repeat; opacity:.10; pointer-events:none; z-index:0; }
+  
+  .passport-photo { position:relative; z-index:1; height:6.4rem; width:4.9rem; overflow:hidden; border-radius:.8rem; background:#dce1e9; }
+  .passport-photo-placeholder { display:grid; height:100%; place-items:center; color:#8f9cad; }
+  .passport-fields { position:relative; z-index:1; grid-column:2; display:flex; flex-direction:column; justify-content:space-between; }
+  .passport-field { border-bottom:1.5px solid #205493; padding:.22rem 0; }
+  .passport-field span { display:block; color:#24406c; font-size:.38rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+  .passport-field strong { display:block; color:#0e2347; font-size:.56rem; font-weight:700; }
+  
+  /* Separator between input fields and signature */
+  .passport-divider { position:relative; z-index:1; grid-column:1 / -1; height:2px; background:#d3dce8; margin:.5rem 0 .35rem; }
+  .passport-divider:before { content:""; position:absolute; left:30%; top:0; width:40%; height:2px; background:linear-gradient(90deg, #ed1d40, #165de8); }
+  .passport-divider:after { content:""; position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); width:5px; height:5px; border-radius:50%; background:#0e2347; border:1px solid #fff; }
+  
+  /* Signature quote section */
+  .passport-quote { position:relative; z-index:1; grid-column:1 / -1; display:flex; align-items:flex-end; justify-content:space-between; gap:.4rem; padding-bottom:.2rem; }
+  .passport-quote-sig { display:flex; flex-direction:column; }
+  .vocalis-signature { font-family:'Great Vibes', 'Sacramento', cursive; font-size:2.3rem; font-weight:400; color:#0e2347; line-height:1; letter-spacing:0.02em; }
+  .vocalis-signature-small { font-family:'Great Vibes', 'Sacramento', cursive; font-size:1.6rem; font-weight:400; color:#0e2347; line-height:1; letter-spacing:0.02em; }
+  .passport-quote-sig span { color:#687890; font-family:var(--app-font-sans); font-size:.38rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-top:.1rem; }
+  .passport-quote-tagline { text-align:right; font-size:.44rem; color:#52617a; line-height:1.5; font-style:italic; }
+  .passport-note { position:absolute; right:0; bottom:-.8rem; z-index:2; display:flex; align-items:center; gap:.45rem; border:1px solid #d6e0eb; border-radius:.5rem; background:rgba(255,255,255,.92); padding:.6rem .75rem; color:#52617a; font-size:.68rem; font-weight:700; box-shadow:0 7px 18px rgba(14,35,71,.08); }
+  .feature-tile { border-left:3px solid #ed1d40; border-radius:.4rem; background:#fff; padding:1.4rem; box-shadow:0 10px 24px rgba(14,35,71,.05); }
+  .feature-tile-blue { border-color:#165de8; }
+  .feature-tile h3 { margin-top:.9rem; color:#0e2347; font-family:var(--app-font-serif); font-size:1rem; font-weight:700; }
+  .feature-tile p { margin-top:.35rem; color:#61718a; font-size:.8rem; line-height:1.5; }
+}
+@keyframes shimmer { to { background-position:-200% 0; } }
+@keyframes rise { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+@keyframes float { 0%,100% { transform:translateY(0) rotate(1deg); } 50% { transform:translateY(-8px) rotate(-1deg); } }
+
+@media (max-width: 767px) {
+  .app-sidebar { transform:translateX(-100%); box-shadow:16px 0 35px rgba(14,35,71,.2); }
+  .app-sidebar.mobile-open { transform:translateX(0); }
+  .sidebar-close, .menu-button { display:grid; place-items:center; }
+  .sidebar-close { color:white; }
+  .app-main { margin-left:0; }
+  .app-header { height:64px; padding:0 1rem; }
+  .menu-button { height:2.3rem; width:2.3rem; color:#0e2347; }
+  .app-content { padding:1.5rem 1rem 3rem; }
+  .dashboard-hero { align-items:flex-start; flex-direction:column; padding:1.4rem; }
+  .dashboard-progress { align-self:center; }
+  .passport-preview-layout, .admin-grid { grid-template-columns:1fr; }
+  .admin-panel { position:static; }
+  .admin-toolbar { flex-direction:column; }
+  .student-row { grid-template-columns:1fr 24px; gap:.5rem; padding:.9rem 1rem; }
+  .student-row > span { display:none; }
+  .passport-full-preview { padding:.6rem; }
+  .passport-render { min-width:530px; }
+  .auth-page { grid-template-columns:1fr; }
+  .auth-art { min-height:220px; padding:1.25rem; }
+  .auth-art-copy { margin-top:2.4rem; }
+  .auth-art-copy h1 { font-size:2.7rem; }
+  .auth-form-side { padding:1.7rem 1.1rem; align-items:flex-start; }
+  .auth-form-side > div { padding-top:.5rem; }
+}
+
+/**
+ * Using the elevate system.
+ * Automatic contrast adjustment.
+ *
+ * <element className="hover-elevate" />
+ * <element className="active-elevate-2" />
+ *
+ * // Using the tailwind utility when a data attribute is "on"
+ * <element className="toggle-elevate data-[state=on]:toggle-elevated" />
+ * // Or manually controlling the toggle state
+ * <element className="toggle-elevate toggle-elevated" />
+ *
+ * Elevation systems have to handle many states.
+ * - not-hovered, vs. hovered vs. active  (three mutually exclusive states)
+ * - toggled or not
+ * - focused or not (this is not handled with these utilities)
+ *
+ * Even without handling focused or not, this is six possible combinations that
+ * need to be distinguished from eachother visually.
+ */
+@layer utilities {
+  /* Hide ugly search cancel button in Chrome until we can style it properly */
+  input[type='search']::-webkit-search-cancel-button {
+    @apply hidden;
+  }
+
+  /* Placeholder styling for contentEditable div */
+  [contenteditable][data-placeholder]:empty::before {
+    content: attr(data-placeholder);
+    color: hsl(var(--muted-foreground));
+    pointer-events: none;
+  }
+
+  /* .no-default-hover-elevate/no-default-active-elevate is an escape hatch so consumers of
+   * buttons/badges can remove the automatic brightness adjustment on interactions
+   * and program their own. */
+  .no-default-hover-elevate {
+  }
+
+  .no-default-active-elevate {
+  }
+
+  /**
+   * Toggleable backgrounds go behind the content. Hoverable/active goes on top.
+   * This way they can stack/compound. Both will overlap the parent's borders!
+   * So borders will be automatically adjusted both on toggle, and hover/active,
+   * and they will be compounded.
+   */
+  .toggle-elevate::before,
+  .toggle-elevate-2::before {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: 0px;
+    /*border-radius: inherit;   match rounded corners */
+    border-radius: inherit;
+    z-index: -1;
+    /* sits behind content but above backdrop */
+  }
+
+  .toggle-elevate.toggle-elevated::before {
+    background-color: var(--elevate-2);
+  }
+
+  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
+  .border.toggle-elevate::before {
+    inset: -1px;
+  }
+
+  /* Does not work on elements with overflow:hidden! */
+  .hover-elevate:not(.no-default-hover-elevate),
+  .active-elevate:not(.no-default-active-elevate),
+  .hover-elevate-2:not(.no-default-hover-elevate),
+  .active-elevate-2:not(.no-default-active-elevate) {
+    position: relative;
+    z-index: 0;
+  }
+
+  .hover-elevate:not(.no-default-hover-elevate)::after,
+  .active-elevate:not(.no-default-active-elevate)::after,
+  .hover-elevate-2:not(.no-default-hover-elevate)::after,
+  .active-elevate-2:not(.no-default-active-elevate)::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: 0px;
+    /*border-radius: inherit;   match rounded corners */
+    border-radius: inherit;
+    z-index: 999;
+    /* sits in front of content */
+  }
+
+  .hover-elevate:hover:not(.no-default-hover-elevate)::after,
+  .active-elevate:active:not(.no-default-active-elevate)::after {
+    background-color: var(--elevate-1);
+  }
+
+  .hover-elevate-2:hover:not(.no-default-hover-elevate)::after,
+  .active-elevate-2:active:not(.no-default-active-elevate)::after {
+    background-color: var(--elevate-2);
+  }
+
+  /* If there's a 1px border, adjust the inset so that it covers that parent's border */
+  .border.hover-elevate:not(.no-hover-interaction-elevate)::after,
+  .border.active-elevate:not(.no-active-interaction-elevate)::after,
+  .border.hover-elevate-2:not(.no-hover-interaction-elevate)::after,
+  .border.active-elevate-2:not(.no-active-interaction-elevate)::after,
+  .border.hover-elevate:not(.no-hover-interaction-elevate)::after {
+    inset: -1px;
+  }
+}

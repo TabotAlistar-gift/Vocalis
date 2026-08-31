@@ -1,0 +1,40 @@
+# compiled output
+dist
+dist-ssr
+tmp
+out-tsc
+*.tsbuildinfo
+.expo
+.expo-shared
+
+# dependencies
+node_modules
+.pnpm-store
+
+# environment and secrets (CRITICAL)
+.env
+.env.*
+!.env.example
+
+# file uploads / local object storage
+uploads
+artifacts/api-server/uploads
+artifacts/api-server/src/storage/objects/uploads
+
+# IDEs and editors
+.idea
+.vscode
+.settings
+*.sublime-workspace
+.gemini
+
+# System Files
+.DS_Store
+Thumbs.db
+
+# Replit files
+.replit
+replit.nix
+.cache
+.local
+.upm

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 128" role="img" aria-label="Vocalis">
+  <defs>
+    <linearGradient id="red" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#ff3041"/><stop offset="1" stop-color="#a40643"/></linearGradient>
+    <linearGradient id="blue" x1="0" x2="1" y1="1" y2="0"><stop offset="0" stop-color="#102a9c"/><stop offset="1" stop-color="#147cff"/></linearGradient>
+  </defs>
+  <path fill="url(#red)" d="M42 8c34 0 58 11 70 32L82 99 57 43C51 28 45 18 31 9c4 0 7-1 11-1Z"/>
+  <path fill="url(#blue)" d="M155 8c-34 0-58 11-70 32l30 59 25-56c6-15 12-25 26-34-4 0-7-1-11-1Z"/>
+  <text x="176" y="72" fill="#101116" font-family="Arial, sans-serif" font-size="51" font-weight="400">Vocalis<tspan fill="#1768e9">.</tspan></text>
+  <text x="178" y="103" fill="#101116" font-family="Arial, sans-serif" font-size="13" letter-spacing="1.4">Turning passion into impact</text>
+</svg>
