@@ -291,27 +291,64 @@ function AuthFallback({ mode }: { mode: 'sign-in' | 'sign-up' }) {
   const [form, setForm] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' });
   const [message, setMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const [resetSubmitting, setResetSubmitting] = useState(false);
   const loginMutation = useLogin();
   const registerMutation = useRegister();
-  const resetMutation = useRequestPasswordReset();
   const [resetMode, setResetMode] = useState(false);
   const mutation = login ? loginMutation : registerMutation;
 
-  function submit(event: FormEvent) {
+  async function submit(event: FormEvent) {
     event.preventDefault();
     setMessage('');
     setSuccessMessage('');
 
     if (resetMode) {
-      resetMutation.mutate(
-        { data: { email: form.email } },
-        {
-          onSuccess: () => {
-            setSuccessMessage('Reset instructions sent. Please check your email inbox.');
-          },
-          onError: (error) => setMessage(errorText(error)),
+      if (!form.email) {
+        setMessage('Please enter your email address.');
+        return;
+      }
+      if (!form.password || form.password.length < 6) {
+        setMessage('New password must be at least 6 characters.');
+        return;
+      }
+      if (form.password !== form.confirmPassword) {
+        setMessage('Passwords do not match.');
+        return;
+      }
+
+      setResetSubmitting(true);
+      try {
+        const backendUrl = import.meta.env.VITE_API_URL || '';
+        const res = await fetch(`${backendUrl}/api/auth/reset-password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: form.email,
+            vocalisIdOrPhone: form.phone,
+            newPassword: form.password,
+            confirmPassword: form.confirmPassword,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          setMessage(data.error || 'Failed to reset password. Please check your details.');
+          setResetSubmitting(false);
+          return;
         }
-      );
+
+        setSuccessMessage(data.message || 'Password reset successfully! Returning to sign in...');
+        setForm((prev) => ({ ...prev, password: '', confirmPassword: '' }));
+        setTimeout(() => {
+          setResetMode(false);
+          setMessage('');
+          setSuccessMessage('Password updated! You can now sign in with your new password.');
+        }, 1800);
+      } catch {
+        setMessage('Network error while resetting password. Please try again.');
+      } finally {
+        setResetSubmitting(false);
+      }
     } else if (login) {
       loginMutation.mutate(
         { data: { email: form.email, password: form.password } },
@@ -385,7 +422,7 @@ function AuthFallback({ mode }: { mode: 'sign-in' | 'sign-up' }) {
               {resetMode ? 'Reset your password' : login ? 'Welcome back' : 'Create your passport'}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              {resetMode ? 'Enter your account email to receive recovery instructions.' : login ? 'Sign in to manage and download your Vocalis Passport.' : 'Join Vocalis and get your official membership ID.'}
+              {resetMode ? 'Enter your account email and choose a new password.' : login ? 'Sign in to manage and download your Vocalis Passport.' : 'Join Vocalis and get your official membership ID.'}
             </p>
           </div>
 
@@ -399,12 +436,14 @@ function AuthFallback({ mode }: { mode: 'sign-in' | 'sign-up' }) {
 
             <Field label="Email Address" value={form.email} onChange={(value) => setForm({ ...form, email: value })} placeholder="you@example.com" type="email" testId="input-email" />
 
-            {!resetMode && (
-              <Field label="Password" value={form.password} onChange={(value) => setForm({ ...form, password: value })} placeholder="At least 6 characters" type="password" testId="input-password" />
+            {resetMode && (
+              <Field label="Vocalis ID or Phone (Optional Verification)" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} placeholder="e.g. VOC-2026-XXXX or Phone" required={false} testId="input-reset-verification" />
             )}
 
-            {!login && !resetMode && (
-              <Field label="Confirm Password" value={form.confirmPassword} onChange={(value) => setForm({ ...form, confirmPassword: value })} placeholder="Repeat your password" type="password" testId="input-confirm-password" />
+            <Field label={resetMode ? "New Password" : "Password"} value={form.password} onChange={(value) => setForm({ ...form, password: value })} placeholder="At least 6 characters" type="password" testId="input-password" />
+
+            {(!login || resetMode) && (
+              <Field label={resetMode ? "Confirm New Password" : "Confirm Password"} value={form.confirmPassword} onChange={(value) => setForm({ ...form, confirmPassword: value })} placeholder="Repeat your password" type="password" testId="input-confirm-password" />
             )}
 
             {login && !resetMode && (
@@ -427,8 +466,8 @@ function AuthFallback({ mode }: { mode: 'sign-in' | 'sign-up' }) {
               </div>
             )}
 
-            <Button type="submit" className="button-primary mt-3 h-12 w-full text-base font-bold shadow-md" disabled={mutation.isPending || resetMutation.isPending} data-testid="button-submit-auth">
-              {mutation.isPending || resetMutation.isPending ? 'Please wait...' : resetMode ? 'Send Reset Instructions' : login ? 'Sign In to Passport' : 'Create My Passport'}
+            <Button type="submit" className="button-primary mt-3 h-12 w-full text-base font-bold shadow-md" disabled={mutation.isPending || resetSubmitting} data-testid="button-submit-auth">
+              {mutation.isPending || resetSubmitting ? 'Please wait...' : resetMode ? 'Update My Password' : login ? 'Sign In to Passport' : 'Create My Passport'}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
           </form>
@@ -642,6 +681,7 @@ function DashboardPage() {
 
   const profile = data.student;
   const passport = data.passport;
+  const isIssued = profile.passportStatus === 'active' || Boolean(passport);
 
   return (
     <div data-testid="page-dashboard" className="space-y-6">
@@ -658,28 +698,48 @@ function DashboardPage() {
         }
       />
 
+      {/* Prominent Issued Alert Banner */}
+      {isIssued && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-[#a3e6b7] bg-[#e8f7ef] p-4 text-[#197044] shadow-sm" data-testid="banner-student-passport-issued">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#197044] text-white shadow-sm">
+              <CheckCircle2 className="h-6 w-6" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#145a32]">Your Vocalis Passport Has Been Issued!</h3>
+              <p className="text-xs text-[#197044]">The Vocalis Founder has officially issued your verified passport. You will receive it soonest!</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+            <Link href="/passport" className="button-primary inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold shadow-sm whitespace-nowrap">
+              <FileBadge className="h-3.5 w-3.5" /> View & Download Card
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Hero Overview Card */}
       <div className="dashboard-hero">
         <div className="space-y-3">
           <p className="text-xs font-bold uppercase tracking-wider text-white/70">Official Membership Status</p>
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="font-display text-2xl font-bold text-white sm:text-3xl">
-              {passport ? 'Passport Active & Issued' : 'Passport In Progress'}
+              {isIssued ? 'Passport Active & Issued' : 'Passport In Progress'}
             </h2>
             <StatusPill status={profile.passportStatus} />
           </div>
           <p className="max-w-md text-sm leading-6 text-white/75">
-            {passport
-              ? `Issued on ${formatDate(passport.dateIssued)} · Your digital record is ready for download and sharing.`
+            {isIssued
+              ? `Issued on ${formatDate(passport?.dateIssued || profile.dateIssued)} · Your official Vocalis Passport has been issued! You will receive it soonest.`
               : 'Complete your profile details and upload a photo to generate your official Vocalis Passport.'}
           </p>
           <div className="pt-2">
             <Link
-              href={passport ? '/passport' : '/profile'}
+              href={isIssued ? '/passport' : '/profile'}
               className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2 text-xs font-bold text-[#f4c641] backdrop-blur-sm transition-colors hover:bg-white/20 hover:text-white"
               data-testid="link-dashboard-action"
             >
-              {passport ? 'Preview Digital Passport' : 'Complete Profile Form'} <ArrowRight className="h-3.5 w-3.5" />
+              {isIssued ? 'Preview Digital Passport' : 'Complete Profile Form'} <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
@@ -1029,31 +1089,68 @@ function PassportPage() {
       />
 
       {passport && passport.status === 'active' ? (
-        <div className="passport-preview-layout">
-          <div className="passport-full-preview">
-            <PassportVisual passport={passport} />
+        <div className="space-y-6">
+          {/* Prominent Issued Alert Banner */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-2xl border border-[#a3e6b7] bg-[#e8f7ef] p-4 text-[#197044] shadow-sm" data-testid="banner-passport-issued">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#197044] text-white shadow-sm">
+                <CheckCircle2 className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-[#145a32]">Passport Officially Issued & Active!</h3>
+                <p className="text-xs text-[#197044]">Your passport has been officially issued by the Vocalis Founder. You will receive it soonest!</p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                const token = localStorage.getItem('vocalis_token') || '';
+                const backendUrl = import.meta.env.VITE_API_URL || '';
+                window.open(`${backendUrl}/api/student/passport/pdf?token=${encodeURIComponent(token)}`, '_blank');
+              }}
+              className="button-primary inline-flex items-center gap-2 px-4 py-2 text-xs font-bold shadow-sm whitespace-nowrap"
+              data-testid="button-download-student-passport-banner"
+            >
+              <Download className="h-3.5 w-3.5" /> Download Official PDF
+            </button>
           </div>
 
-          <div className="passport-details content-card p-6">
-            <p className="card-kicker">Passport Verification</p>
-            <h2 className="card-title mt-1">Official Record</h2>
-
-            <div className="mt-6 space-y-4">
-              <DataPoint label="Passport Status" value="Active & Authorized" testId="text-passport-status" />
-              <DataPoint label="Vocalis ID" value={passport.vocalisId} testId="text-passport-id" />
-              <DataPoint label="Level" value={passport.level} testId="text-passport-level" />
-              <DataPoint label="Current Badge" value={passport.badge} testId="text-passport-badge" />
-              <DataPoint label="Date Issued" value={formatDate(passport.dateIssued)} testId="text-passport-issued" />
-              <DataPoint label="Date Joined" value={formatDate(passport.dateJoined)} testId="text-passport-joined" />
+          <div className="passport-preview-layout">
+            <div className="passport-full-preview">
+              <PassportVisual passport={passport} />
             </div>
 
-            <div className="mt-7 border-t border-border pt-5 space-y-2 text-center">
-              <div className="inline-flex items-center gap-2 rounded-full bg-[#e8f7ef] px-4 py-2 text-xs font-bold text-[#197044]">
-                <CheckCircle2 className="h-4 w-4" /> Officially Issued & Verified
+            <div className="passport-details content-card p-6">
+              <p className="card-kicker">Passport Verification</p>
+              <h2 className="card-title mt-1">Official Record</h2>
+
+              <div className="mt-6 space-y-4">
+                <DataPoint label="Passport Status" value="Active & Authorized" testId="text-passport-status" />
+                <DataPoint label="Vocalis ID" value={passport.vocalisId} testId="text-passport-id" />
+                <DataPoint label="Level" value={passport.level} testId="text-passport-level" />
+                <DataPoint label="Current Badge" value={passport.badge} testId="text-passport-badge" />
+                <DataPoint label="Date Issued" value={formatDate(passport.dateIssued)} testId="text-passport-issued" />
+                <DataPoint label="Date Joined" value={formatDate(passport.dateJoined)} testId="text-passport-joined" />
               </div>
-              <p className="text-[11px] leading-4 text-muted-foreground pt-1">
-                Official digital passport issued and authorized by the Vocalis Founder.
-              </p>
+
+              <div className="mt-7 border-t border-border pt-5 space-y-3 text-center">
+                <div className="inline-flex items-center gap-2 rounded-full bg-[#e8f7ef] px-4 py-2 text-xs font-bold text-[#197044]">
+                  <CheckCircle2 className="h-4 w-4" /> Officially Issued & Verified
+                </div>
+                <p className="text-[11px] leading-4 text-muted-foreground">
+                  Official digital passport issued and authorized by the Vocalis Founder. You will receive your physical card soonest.
+                </p>
+                <button
+                  onClick={() => {
+                    const token = localStorage.getItem('vocalis_token') || '';
+                    const backendUrl = import.meta.env.VITE_API_URL || '';
+                    window.open(`${backendUrl}/api/student/passport/pdf?token=${encodeURIComponent(token)}`, '_blank');
+                  }}
+                  className="button-secondary mt-2 inline-flex w-full items-center justify-center gap-2 py-2.5 text-xs font-bold shadow-sm"
+                  data-testid="button-download-student-passport-side"
+                >
+                  <Download className="h-3.5 w-3.5" /> Download Passport PDF
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1062,9 +1159,9 @@ function PassportPage() {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#eef3ff] text-[#165de8] shadow-sm">
             <FileBadge className="h-8 w-8" />
           </div>
-          <h2 className="mt-5 font-display text-2xl font-bold text-[#0e2347]">Passport Pending Review & Issuance</h2>
+          <h2 className="mt-5 font-display text-2xl font-bold text-[#0e2347]">Passport In Review & Processing</h2>
           <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-            Your profile details and registration are saved. The Vocalis Founder reviews member accounts and officially issues your verified passport.
+            Your profile details and registration are saved. Once the Vocalis Founder generates and issues your passport, it will appear here as Officially Issued.
           </p>
           <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
             <Link href="/profile" className="button-primary inline-flex h-11 items-center justify-center rounded-xl px-5 text-sm font-bold shadow-md">
@@ -1149,9 +1246,42 @@ function RenderField({ label, value }: { label: string; value: string }) {
 function AdminPage() {
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [clearingDb, setClearingDb] = useState(false);
   const params = useMemo(() => (search ? { search } : undefined), [search]);
   const { data: students, isLoading, error, refetch } = useListAdminStudents(params);
   const selected = students?.find((student) => student.id === selectedId);
+
+  async function handleClearDatabase() {
+    if (!window.confirm("Are you sure you want to clear the database? This will remove all student accounts and passports while keeping the Founder Admin account.")) {
+      return;
+    }
+
+    setClearingDb(true);
+    try {
+      const token = localStorage.getItem('vocalis_token') || '';
+      const backendUrl = import.meta.env.VITE_API_URL || '';
+      const res = await fetch(`${backendUrl}/api/admin/reset-database`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert(data.message || 'Database cleared successfully.');
+        setSelectedId(null);
+        refetch();
+      } else {
+        alert(data.error || 'Failed to clear database.');
+      }
+    } catch {
+      alert('Network error while resetting database.');
+    } finally {
+      setClearingDb(false);
+    }
+  }
 
   return (
     <div data-testid="page-admin" className="space-y-6">
@@ -1160,8 +1290,19 @@ function AdminPage() {
         title="Student Passport Management"
         subtitle="Review registered students, update levels & badges, and issue official passports."
         action={
-          <div className="admin-count">
-            <Users className="h-4 w-4" /> {students?.length || 0} Registered Students
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="admin-count">
+              <Users className="h-4 w-4" /> {students?.length || 0} Registered Students
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleClearDatabase}
+              disabled={clearingDb}
+              className="h-10 rounded-xl border-[#fca5a5] bg-[#fff5f5] text-xs font-bold text-[#dc2626] hover:bg-[#fee2e2]"
+              data-testid="button-admin-clear-db"
+            >
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" /> {clearingDb ? 'Clearing...' : 'Clear Database'}
+            </Button>
           </div>
         }
       />

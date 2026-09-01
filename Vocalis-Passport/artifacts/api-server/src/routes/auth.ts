@@ -223,12 +223,94 @@ router.post("/auth/forgot-password", async (req: Request, res: Response) => {
       return;
     }
 
-    // Always respond with success message for security/privacy
-    logger.info({ email }, "Password reset requested");
-    res.json({ message: "If an account exists with that email, reset instructions have been dispatched." });
+    const normalizedEmail = email.trim().toLowerCase();
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, normalizedEmail))
+      .limit(1);
+
+    if (!user || !user.active) {
+      res.status(404).json({ error: "No account found matching this email address." });
+      return;
+    }
+
+    logger.info({ email: normalizedEmail, userId: user.id }, "Password reset requested");
+    res.json({
+      success: true,
+      message: "Account verified. Please enter your new password below.",
+      vocalisId: user.vocalisId,
+    });
   } catch (error) {
     logger.error({ err: error }, "Error in forgot-password");
-    res.status(500).json({ error: "Failed to process password reset." });
+    res.status(500).json({ error: "Failed to process password reset request." });
+  }
+});
+
+/**
+ * POST /api/auth/reset-password
+ */
+router.post("/auth/reset-password", async (req: Request, res: Response) => {
+  try {
+    const { email, newPassword, confirmPassword, vocalisIdOrPhone } = req.body || {};
+
+    if (!email || !newPassword) {
+      res.status(400).json({ error: "Email address and new password are required." });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      res.status(400).json({ error: "New password must be at least 6 characters long." });
+      return;
+    }
+
+    if (confirmPassword && newPassword !== confirmPassword) {
+      res.status(400).json({ error: "Passwords do not match." });
+      return;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const [user] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.email, normalizedEmail))
+      .limit(1);
+
+    if (!user || !user.active) {
+      res.status(404).json({ error: "No account found matching this email address." });
+      return;
+    }
+
+    // If vocalisIdOrPhone is provided, verify match
+    if (vocalisIdOrPhone && vocalisIdOrPhone.trim()) {
+      const matchKey = vocalisIdOrPhone.trim().toLowerCase();
+      const userVid = (user.vocalisId || "").toLowerCase();
+      const userPhone = (user.phone || "").toLowerCase().replace(/[^0-9]/g, "");
+      const inputClean = matchKey.replace(/[^0-9a-z-]/g, "");
+
+      if (userVid !== matchKey && !userPhone.includes(inputClean.replace(/[^0-9]/g, ""))) {
+        res.status(400).json({ error: "Verification details did not match our records for this account." });
+        return;
+      }
+    }
+
+    const newHash = await hashPassword(newPassword);
+
+    await db
+      .update(usersTable)
+      .set({ passwordHash: newHash })
+      .where(eq(usersTable.id, user.id));
+
+    logger.info({ email: normalizedEmail, userId: user.id }, "Password reset successfully completed");
+
+    res.json({
+      success: true,
+      message: "Your password has been successfully reset! You can now sign in with your new password.",
+    });
+  } catch (error) {
+    logger.error({ err: error }, "Error in reset-password");
+    res.status(500).json({ error: "Failed to reset password. Please try again." });
   }
 });
 

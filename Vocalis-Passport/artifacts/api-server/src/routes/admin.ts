@@ -298,6 +298,40 @@ router.get("/admin/students/:id/passport/pdf", async (req: Request, res: Respons
       return;
     }
 
+    const today = new Date().toISOString().slice(0, 10);
+    const dateIssued = student.dateIssued || today;
+
+    // Automatically ensure student's passportStatus is set to 'active'
+    if (student.passportStatus !== "active" || !student.dateIssued) {
+      await db
+        .update(usersTable)
+        .set({
+          passportStatus: "active",
+          dateIssued,
+        })
+        .where(eq(usersTable.id, studentId));
+    }
+
+    // Upsert passport record
+    const [existingPassport] = await db
+      .select()
+      .from(passportsTable)
+      .where(eq(passportsTable.studentId, studentId))
+      .limit(1);
+
+    if (existingPassport) {
+      await db
+        .update(passportsTable)
+        .set({ status: "active", generatedAt: new Date() })
+        .where(eq(passportsTable.id, existingPassport.id));
+    } else {
+      await db.insert(passportsTable).values({
+        studentId,
+        status: "active",
+        generatedAt: new Date(),
+      });
+    }
+
     let photoPath = student.profilePhotoPath;
     if (photoPath && !photoPath.startsWith("http") && !photoPath.startsWith("data:")) {
       photoPath = path.resolve(process.cwd(), photoPath.replace(/^\/+/, ""));
@@ -309,7 +343,7 @@ router.get("/admin/students/:id/passport/pdf", async (req: Request, res: Respons
       level: student.level,
       badge: student.badge,
       dateJoined: student.dateJoined,
-      dateIssued: student.dateIssued || new Date().toISOString().slice(0, 10),
+      dateIssued,
       profilePhotoPath: photoPath,
     });
 
@@ -325,6 +359,30 @@ router.get("/admin/students/:id/passport/pdf", async (req: Request, res: Respons
   } catch (error) {
     logger.error({ err: error }, "Error creating passport PDF for admin");
     res.status(500).json({ error: "Failed to generate passport PDF." });
+  }
+});
+
+/**
+ * POST /api/admin/reset-database
+ * Clears all student accounts and passports, keeping admin intact.
+ */
+router.post("/admin/reset-database", requireAdmin, async (_req: Request, res: Response) => {
+  try {
+    const deletedPassports = await db.delete(passportsTable).returning();
+    const deletedStudents = await db.delete(usersTable).where(eq(usersTable.role, "student")).returning();
+
+    logger.info(
+      { deletedPassports: deletedPassports.length, deletedStudents: deletedStudents.length },
+      "Database cleared by admin"
+    );
+
+    res.json({
+      success: true,
+      message: `Database cleared. Removed ${deletedStudents.length} students and ${deletedPassports.length} passports.`,
+    });
+  } catch (error) {
+    logger.error({ err: error }, "Error clearing database");
+    res.status(500).json({ error: "Failed to reset database." });
   }
 });
 
