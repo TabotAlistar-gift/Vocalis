@@ -2,7 +2,7 @@ import path from "path";
 import { Router, type IRouter, type Request, type Response } from "express";
 import { db, usersTable, passportsTable } from "@workspace/db";
 import { eq, ilike, or, desc, and } from "drizzle-orm";
-import { requireAdmin } from "../lib/auth";
+import { requireAdmin, extractToken, verifySessionToken } from "../lib/auth";
 import { generatePassportPdf } from "../lib/pdfGenerator";
 import { logger } from "../lib/logger";
 
@@ -255,8 +255,32 @@ router.post("/admin/students/:id/passport", requireAdmin, async (req: Request, r
 /**
  * GET /api/admin/students/:id/passport/pdf
  */
-router.get("/admin/students/:id/passport/pdf", requireAdmin, async (req: Request, res: Response) => {
+router.get("/admin/students/:id/passport/pdf", async (req: Request, res: Response) => {
   try {
+    // Authenticate admin from request user or direct token parameter
+    let adminUser = req.user;
+    if (!adminUser) {
+      const token = extractToken(req);
+      if (token) {
+        const payload = verifySessionToken(token);
+        if (payload) {
+          const [found] = await db
+            .select()
+            .from(usersTable)
+            .where(eq(usersTable.id, payload.userId))
+            .limit(1);
+          if (found && found.active && found.role === "admin") {
+            adminUser = found;
+          }
+        }
+      }
+    }
+
+    if (!adminUser || adminUser.role !== "admin") {
+      res.status(401).json({ error: "Founder or Admin authentication required." });
+      return;
+    }
+
     const studentId = parseInt(req.params["id"] as string, 10);
     if (isNaN(studentId)) {
       res.status(400).json({ error: "Invalid student ID." });
@@ -292,7 +316,10 @@ router.get("/admin/students/:id/passport/pdf", requireAdmin, async (req: Request
     const filename = `Vocalis_Passport_${student.vocalisId}.pdf`;
 
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`
+    );
     res.setHeader("Content-Length", pdfBuffer.length);
     res.send(Buffer.from(pdfBuffer));
   } catch (error) {

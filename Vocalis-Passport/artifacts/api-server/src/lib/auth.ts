@@ -109,7 +109,29 @@ export function verifySessionToken(token: string): SessionPayload | null {
  * Extract token from Cookie or Authorization header
  */
 export function extractToken(req: Request): string | null {
-  // Check Cookie header
+  // 1. Check URL query parameter (?token=...)
+  if (req.query && typeof req.query.token === "string" && req.query.token.trim()) {
+    return req.query.token.trim();
+  }
+
+  // 1b. Check raw URL for token param if req.query is empty
+  if (req.url && req.url.includes("token=")) {
+    try {
+      const parsed = new URL(req.url, "http://localhost");
+      const urlToken = parsed.searchParams.get("token");
+      if (urlToken && urlToken.trim()) {
+        return urlToken.trim();
+      }
+    } catch {}
+  }
+
+  // 2. Check Authorization Bearer header
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    return authHeader.slice(7).trim();
+  }
+
+  // 3. Check Cookie header
   const cookieHeader = req.headers.cookie;
   if (cookieHeader) {
     const cookies = cookieHeader.split(";").reduce((acc, str) => {
@@ -121,17 +143,6 @@ export function extractToken(req: Request): string | null {
     if (cookies[COOKIE_NAME]) {
       return cookies[COOKIE_NAME];
     }
-  }
-
-  // Check Authorization Bearer header
-  const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    return authHeader.slice(7).trim();
-  }
-
-  // Check URL query parameter (essential for direct mobile download links)
-  if (typeof req.query.token === "string" && req.query.token.trim()) {
-    return req.query.token.trim();
   }
 
   return null;
