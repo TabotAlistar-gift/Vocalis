@@ -1457,9 +1457,16 @@ function AdminStudentPanel({ student, close }: { student: AdminStudent; close: (
                 <Sparkles className="mr-2 h-4 w-4" /> {generate.isPending ? 'Generating...' : student.passportStatus === 'active' ? 'Regenerate Passport' : 'Generate Passport'}
               </Button>
               {student.passportStatus === 'active' && (
-                <Button variant="outline" className="h-10 w-full justify-start rounded-xl border-[#d8e1ec] font-bold text-[#0e2347] shadow-sm" onClick={handleDownload} disabled={download.isFetching} data-testid="button-download-admin-passport">
-                  <Download className="mr-2 h-4 w-4" /> Download Passport PDF
-                </Button>
+                <a
+                  href={`${import.meta.env.VITE_API_URL || 'https://vocalis-ti2p.onrender.com'}/api/admin/students/${student.id}/passport/pdf?token=${encodeURIComponent(localStorage.getItem('vocalis_token') || '')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  download={`Vocalis_Passport_${student.vocalisId}.pdf`}
+                  className="flex h-10 w-full items-center justify-start rounded-xl border border-[#d8e1ec] bg-white px-4 text-xs font-bold text-[#0e2347] shadow-sm transition-colors hover:bg-[#f8fafc]"
+                  data-testid="button-download-admin-passport"
+                >
+                  <Download className="mr-2 h-4 w-4 shrink-0 text-[#165de8]" /> Download Passport PDF
+                </a>
               )}
               <Button variant="ghost" className="mt-2 h-10 w-full justify-start rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive" onClick={handleDeactivate} disabled={deactivate.isPending} data-testid="button-deactivate-student">
                 <Trash2 className="mr-2 h-4 w-4" /> Delete & Free Credentials
